@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 51fd6a93f2db4c1fa8e18440e8ec4faa
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - colorRotePrefab: {fileID: 4066229052593046665, guid: d62cb7a7772d8a741a7cc53224fcb152, type: 3}
+  - flowManager: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
