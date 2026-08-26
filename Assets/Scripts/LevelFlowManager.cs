@@ -38,7 +38,7 @@ namespace ColorMelt.Core
             if (moveCounter != null)
                 moveCounter.OnMovesExhausted += HandleMovesExhausted;
 
-            Simulate();
+            RecalculateFlows();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace ColorMelt.Core
             SubscribeToBlocks();
 
             if (_hasStarted)
-                Simulate();
+                RecalculateFlows();
         }
 
         private void SubscribeToBlocks()
@@ -87,11 +87,27 @@ namespace ColorMelt.Core
             if (sw == null || !sw.CanCycle) return;
             sw.CyclePosition();
             moveCounter?.SpendMove();
-            Simulate();
+            RecalculateFlows();
         }
 
-        /// <summary>Полный пересчёт всех потоков от источников по графу.</summary>
-        private void Simulate()
+        /// <summary>
+        /// Selects an exact route on a lever. Selecting its current route is
+        /// intentionally free, so an imprecise repeat click never wastes a move.
+        /// </summary>
+        public void OnPlayerSelectedSwitchPosition(SwitchNode sw, int positionIndex)
+        {
+            if (sw == null || !sw.CanCycle || sw.CurrentPositionIndex == positionIndex) return;
+            sw.SetPosition(positionIndex);
+            moveCounter?.SpendMove();
+            RecalculateFlows();
+        }
+
+        /// <summary>
+        /// Clears every channel and builds the current state again from the
+        /// sources. This prevents a mixed colour from remaining in a side
+        /// route after its lever is returned to the original position.
+        /// </summary>
+        public void RecalculateFlows()
         {
             // Each click is a new state of the puzzle. Clear channels first so
             // colour is mixed only from flows valid for the current lever setup.
@@ -124,7 +140,7 @@ namespace ColorMelt.Core
         private void HandleBlockDestroyed()
         {
             AutoResetSwitches(); // ход не тратится — SpendMove() здесь намеренно не вызывается
-            Simulate();
+            RecalculateFlows();
             CheckWinCondition();
         }
 
@@ -133,7 +149,10 @@ namespace ColorMelt.Core
         {
             if (allSwitches != null)
                 foreach (var sw in allSwitches)
-                    sw.ResetPosition();
+                    // A switch only resets after a block was actually melted,
+                    // and only if it was directing flow away from its own hill.
+                    if (sw != null && sw.CurrentPositionIndex != 0)
+                        sw.ResetPosition();
         }
 
         private void CheckWinCondition()

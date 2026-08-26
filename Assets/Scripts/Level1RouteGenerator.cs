@@ -32,10 +32,9 @@ namespace ColorMelt.Core
 
         [Header("Layout")]
         [SerializeField] private Vector3 firstRoutePosition = Vector3.zero;
-        [SerializeField] private Vector3 routeSpacing = new Vector3(0f, 0f, 3.5f);
+        [SerializeField] private Vector3 routeSpacing = new Vector3(0f, 0f, 1.2f);
         [SerializeField] private Vector3 segmentSpacing = new Vector3(10f, 0f, 0f);
         [SerializeField] private Vector3 cubeScale = Vector3.one;
-        [SerializeField] private bool generateTriangleLevers = true;
         [SerializeField] private bool prepareSwitchAnchors = true;
         [SerializeField] private bool generateOnAwake;
 
@@ -68,7 +67,7 @@ namespace ColorMelt.Core
             };
         }
 
-        [ContextMenu("Generate Level 1 Routes")]
+        [ContextMenu("Generate Missing Level 1 Routes (Safe)")]
         public void Generate()
         {
             if (colorRotePrefab == null)
@@ -77,116 +76,42 @@ namespace ColorMelt.Core
                 return;
             }
 
-            ClearGenerated();
+            // Generation is additive. Designers can append a route in the
+            // Inspector without losing placed levers, materials or manually
+            // adjusted transforms on the routes that already exist.
+            var root = transform.Find(GeneratedRootName);
+            if (root == null)
+            {
+                root = new GameObject(GeneratedRootName).transform;
+                root.SetParent(transform, false);
+            }
 
-            var root = new GameObject(GeneratedRootName).transform;
-            root.SetParent(transform, false);
-            var sources = new List<SourceNode>();
-            var blocks = new List<BlockNode>();
-            var switches = new List<SwitchNode>();
-            var channels = new List<ChannelNode>();
-            var generatedRoutes = new List<GeneratedRoute>();
+            DisableNestedFlowManagers(root);
 
-            for (var routeIndex = 0; routeIndex < routes.Count; routeIndex++)
+            var existingRouteCount = CountRouteRoots(root);
+            for (var routeIndex = existingRouteCount; routeIndex < routes.Count; routeIndex++)
             {
                 var route = routes[routeIndex];
                 if (route == null || route.segmentCount < 1) continue;
-
-                var routeRoot = new GameObject(string.IsNullOrWhiteSpace(route.name)
-                    ? $"Route {routeIndex + 1}" : route.name).transform;
-                routeRoot.SetParent(root, false);
-
-                var routeStart = firstRoutePosition + routeSpacing * routeIndex;
-                ChannelNode previous = null;
-                ChannelNode blockChannel = null;
-                ChannelVisual blockVisual = null;
-                var routeChannels = new List<ChannelNode>();
-
-                for (var segmentIndex = 0; segmentIndex < route.segmentCount; segmentIndex++)
-                {
-                    var segment = Instantiate(colorRotePrefab, routeStart + segmentSpacing * segmentIndex,
-                        colorRotePrefab.transform.rotation, routeRoot);
-                    segment.name = $"Color_rote {segmentIndex + 1}";
-
-                    var channel = segment.GetComponent<ChannelNode>();
-                    if (channel == null)
-                    {
-                        Debug.LogError("Level1RouteGenerator: Color_rote prefab needs ChannelNode on its root.", segment);
-                        DestroyObject(segment);
-                        continue;
-                    }
-
-                    if (previous != null)
-                        previous.SetRuntimeOutput(channel);
-                    previous = channel;
-                    channels.Add(channel);
-                    routeChannels.Add(channel);
-                    segment.GetComponent<ChannelVisual>()?.SetConfiguredFlowColor(route.flowColor);
-
-                    var requestedBlockSegment = route.blockSegmentIndex < 0
-                        ? route.segmentCount - 1
-                        : Mathf.Clamp(route.blockSegmentIndex, 0, route.segmentCount - 1);
-                    if (segmentIndex == requestedBlockSegment)
-                    {
-                        blockChannel = channel;
-                        blockVisual = segment.GetComponent<ChannelVisual>();
-                    }
-                }
-
-                if (previous == null) continue;
-
-                var sourceObject = new GameObject("Source");
-                sourceObject.transform.SetParent(routeRoot, false);
-                sourceObject.transform.position = routeStart - segmentSpacing;
-                var source = sourceObject.AddComponent<SourceNode>();
-                var firstChannel = GetFirstChannel(routeRoot);
-                source.Configure(route.flowColor, firstChannel);
-                sources.Add(source);
-                generatedRoutes.Add(new GeneratedRoute(firstChannel, routeStart, source, route.flowColor));
-
-                if (route.generateBlock && blockChannel != null)
-                {
-                    var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube.name = "Color block";
-                    cube.transform.SetParent(routeRoot, true);
-                    var blockSegment = route.blockSegmentIndex < 0 ? route.segmentCount - 1
-                        : Mathf.Clamp(route.blockSegmentIndex, 0, route.segmentCount - 1);
-                    cube.transform.position = routeStart + segmentSpacing * (blockSegment + route.blockStartNormalized);
-                    cube.transform.localScale = cubeScale;
-                    SetCubeColor(cube, route.blockRequiredColor);
-
-                    var block = cube.AddComponent<BlockNode>();
-                    var nodeAfterBlock = blockSegment + 1 < routeChannels.Count
-                        ? routeChannels[blockSegment + 1]
-                        : null;
-                    block.Configure(route.blockRequiredColor, blockVisual, route.blockStartNormalized, cube, nodeAfterBlock);
-                    blockChannel.SetRuntimeOutput(block);
-                    blocks.Add(block);
-                }
+                CreateRoute(root, routeIndex, route);
             }
 
-            ConfigureRouteSwitches(generatedRoutes, switches);
-
-            if (prepareSwitchAnchors)
-                CreateSwitchAnchors(root, generatedRoutes);
-
-            if (flowManager == null)
-                flowManager = GetComponent<LevelFlowManager>();
-
-            if (flowManager != null)
-                flowManager.ConfigureGeneratedGraph(sources, switches, blocks, channels);
-            else
-                Debug.LogWarning("Level1RouteGenerator: no LevelFlowManager assigned; routes are visual only.", this);
+            // This reconnects every route and ensures each Source, including
+            // existing ones, has its cube lever immediately.
+            RebuildExistingRoutes();
         }
 
         /// <summary>
         /// Restores source/channel/block links for routes saved in the scene.
         /// This preserves their meshes, transforms and existing components.
         /// </summary>
+        [ContextMenu("Refresh Existing Routes And Levers")]
         public void RebuildExistingRoutes()
         {
             var root = transform.Find(GeneratedRootName);
             if (root == null) return;
+
+            DisableNestedFlowManagers(root);
 
             var sources = new List<SourceNode>();
             var blocks = new List<BlockNode>();
@@ -253,6 +178,85 @@ namespace ColorMelt.Core
                 DestroyObject(oldRoot.gameObject);
         }
 
+        private int CountRouteRoots(Transform root)
+        {
+            var count = 0;
+            for (var childIndex = 0; childIndex < root.childCount; childIndex++)
+                if (root.GetChild(childIndex).GetComponent<FutureSwitchAnchor>() == null)
+                    count++;
+            return count;
+        }
+
+        /// <summary>Creates one new route without touching any existing route.</summary>
+        private void CreateRoute(Transform root, int routeIndex, RouteDefinition route)
+        {
+            var routeRoot = new GameObject(string.IsNullOrWhiteSpace(route.name)
+                ? $"Route {routeIndex + 1}" : route.name).transform;
+            routeRoot.SetParent(root, false);
+
+            var routeStart = firstRoutePosition + routeSpacing * routeIndex;
+            ChannelNode previous = null;
+            ChannelNode blockChannel = null;
+            ChannelVisual blockVisual = null;
+            var routeChannels = new List<ChannelNode>();
+
+            for (var segmentIndex = 0; segmentIndex < route.segmentCount; segmentIndex++)
+            {
+                var segment = Instantiate(colorRotePrefab, routeStart + segmentSpacing * segmentIndex,
+                    colorRotePrefab.transform.rotation, routeRoot);
+                segment.name = $"Color_rote {segmentIndex + 1}";
+
+                var channel = segment.GetComponent<ChannelNode>();
+                if (channel == null)
+                {
+                    Debug.LogError("Level1RouteGenerator: Color_rote prefab needs ChannelNode on its root.", segment);
+                    DestroyObject(segment);
+                    continue;
+                }
+
+                if (previous != null)
+                    previous.SetRuntimeOutput(channel);
+                previous = channel;
+                routeChannels.Add(channel);
+                segment.GetComponent<ChannelVisual>()?.SetConfiguredFlowColor(route.flowColor);
+
+                var requestedBlockSegment = route.blockSegmentIndex < 0
+                    ? route.segmentCount - 1
+                    : Mathf.Clamp(route.blockSegmentIndex, 0, route.segmentCount - 1);
+                if (segmentIndex == requestedBlockSegment)
+                {
+                    blockChannel = channel;
+                    blockVisual = segment.GetComponent<ChannelVisual>();
+                }
+            }
+
+            if (previous == null) return;
+
+            var sourceObject = new GameObject("Source");
+            sourceObject.transform.SetParent(routeRoot, false);
+            sourceObject.transform.position = routeStart - segmentSpacing;
+            var source = sourceObject.AddComponent<SourceNode>();
+            source.Configure(route.flowColor, routeChannels[0]);
+
+            if (!route.generateBlock || blockChannel == null) return;
+
+            var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.name = "Color block";
+            cube.transform.SetParent(routeRoot, true);
+            var blockSegment = route.blockSegmentIndex < 0 ? route.segmentCount - 1
+                : Mathf.Clamp(route.blockSegmentIndex, 0, route.segmentCount - 1);
+            cube.transform.position = routeStart + segmentSpacing * (blockSegment + route.blockStartNormalized);
+            cube.transform.localScale = cubeScale;
+            SetCubeColor(cube, route.blockRequiredColor);
+
+            var block = cube.AddComponent<BlockNode>();
+            var nodeAfterBlock = blockSegment + 1 < routeChannels.Count
+                ? routeChannels[blockSegment + 1]
+                : null;
+            block.Configure(route.blockRequiredColor, blockVisual, route.blockStartNormalized, cube, nodeAfterBlock);
+            blockChannel.SetRuntimeOutput(block);
+        }
+
         private static ChannelNode GetFirstChannel(Transform routeRoot)
         {
             return routeRoot.GetComponentInChildren<ChannelNode>();
@@ -286,24 +290,48 @@ namespace ColorMelt.Core
                     switchNode = route.source.gameObject.AddComponent<SwitchNode>();
 
                 var destinations = new List<IFlowNode> { route.firstChannel };
+                var leverYaws = new List<float> { 0f };
                 if (routeIndex > 0)
+                {
                     destinations.Add(generatedRoutes[routeIndex - 1].firstChannel);
+                    leverYaws.Add(-45f);
+                }
                 if (routeIndex < generatedRoutes.Count - 1)
+                {
                     destinations.Add(generatedRoutes[routeIndex + 1].firstChannel);
+                    leverYaws.Add(45f);
+                }
 
                 switchNode.ConfigureRuntimePositions(destinations);
                 route.source.Configure(route.flowColor, switchNode);
                 switches.Add(switchNode);
 
-                if (generateTriangleLevers)
-                    CreateOrConfigureTriangleLever(route, switchNode);
+                // Every hill has a controllable source, so it always receives
+                // a cube lever. This also repairs scenes made while lever
+                // generation was an optional checkbox.
+                CreateOrConfigureCubeLever(route, switchNode, leverYaws.ToArray());
             }
         }
 
-        private void CreateOrConfigureTriangleLever(GeneratedRoute route, SwitchNode switchNode)
+        private void DisableNestedFlowManagers(Transform root)
         {
-            const string LeverName = "Triangle lever";
-            var leverTransform = route.source.transform.Find(LeverName);
+            if (flowManager == null)
+                flowManager = GetComponent<LevelFlowManager>();
+
+            foreach (var manager in root.GetComponentsInChildren<LevelFlowManager>(true))
+            {
+                if (manager != null && manager != flowManager)
+                    manager.enabled = false;
+            }
+        }
+
+        private void CreateOrConfigureCubeLever(GeneratedRoute route, SwitchNode switchNode, float[] positionYaws)
+        {
+            const string LeverName = "Lever cube";
+            // Reuse the previous temporary triangle object if it is already in
+            // a saved scene. Its transform/material remain untouched.
+            var leverTransform = route.source.transform.Find(LeverName)
+                ?? route.source.transform.Find("Triangle lever");
             if (leverTransform == null)
             {
                 leverTransform = new GameObject(LeverName).transform;
@@ -312,48 +340,45 @@ namespace ColorMelt.Core
             }
 
             var leverObject = leverTransform.gameObject;
-            var filter = leverObject.GetComponent<MeshFilter>() ?? leverObject.AddComponent<MeshFilter>();
-            if (filter.sharedMesh == null)
-                filter.sharedMesh = CreateTriangleMesh();
-            if (leverObject.GetComponent<MeshRenderer>() == null)
-                leverObject.AddComponent<MeshRenderer>();
-            var meshCollider = leverObject.GetComponent<MeshCollider>() ?? leverObject.AddComponent<MeshCollider>();
-            meshCollider.sharedMesh = filter.sharedMesh;
-            if (leverObject.GetComponent<RouteSwitchLever>() == null)
+            leverObject.name = LeverName;
+            // Do not use ?? with Unity components here. A component that was
+            // removed in the editor can be a managed non-null reference while
+            // Unity considers it destroyed, which caused the previous error.
+            var filter = leverObject.GetComponent<MeshFilter>();
+            if (filter == null)
+                filter = leverObject.AddComponent<MeshFilter>();
+            filter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+            var renderer = leverObject.GetComponent<MeshRenderer>();
+            if (renderer == null)
+                renderer = leverObject.AddComponent<MeshRenderer>();
+            var leverColour = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(leverColour);
+            var sourceColour = ChannelVisual.ToUnityColor(route.flowColor);
+            leverColour.SetColor("_BaseColor", sourceColour);
+            leverColour.SetColor("_Color", sourceColour);
+            renderer.SetPropertyBlock(leverColour);
+            var meshCollider = leverObject.GetComponent<MeshCollider>();
+            if (meshCollider != null)
+                DestroyComponent(meshCollider);
+            var boxCollider = leverObject.GetComponent<BoxCollider>();
+            if (boxCollider == null)
+                leverObject.AddComponent<BoxCollider>();
+            var leverScript = leverObject.GetComponent<RouteSwitchLever>();
+            if (leverScript == null)
                 leverObject.AddComponent<RouteSwitchLever>();
 
             var lever = leverTransform.GetComponent<RouteSwitchLever>();
             if (lever != null)
-                lever.Configure(flowManager, switchNode);
+                lever.Configure(flowManager, switchNode, positionYaws,
+                    ChannelVisual.ToUnityColor(route.flowColor));
         }
 
-        private static Mesh CreateTriangleMesh()
+        private static void DestroyComponent(Component component)
         {
-            var mesh = new Mesh { name = "Triangle lever mesh" };
-            mesh.vertices = new[]
-            {
-                new Vector3(-0.45f, 0f, -0.12f),
-                new Vector3(0.45f, 0f, -0.12f),
-                new Vector3(0f, 0.8f, -0.12f),
-                new Vector3(-0.45f, 0f, 0.12f),
-                new Vector3(0.45f, 0f, 0.12f),
-                new Vector3(0f, 0.8f, 0.12f)
-            };
-            mesh.triangles = new[]
-            {
-                0, 1, 2, 5, 4, 3, // front and back
-                0, 3, 4, 0, 4, 1, // bottom
-                1, 4, 5, 1, 5, 2, // right
-                2, 5, 3, 2, 3, 0  // left
-            };
-            mesh.uv = new[]
-            {
-                Vector2.zero, Vector2.right, Vector2.up,
-                Vector2.zero, Vector2.right, Vector2.up
-            };
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-            return mesh;
+            if (Application.isPlaying)
+                Destroy(component);
+            else
+                DestroyImmediate(component);
         }
 
         private void RebuildSwitchAnchors(Transform root, List<GeneratedRoute> generatedRoutes)

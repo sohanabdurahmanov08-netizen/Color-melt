@@ -26,6 +26,11 @@ namespace ColorMelt.Core
         [SerializeField] private ColorType visualColor = ColorType.Red;
         [Tooltip("Optional node reached after this block has been destroyed.")]
         [SerializeField] private FlowNodeRef output;
+        [Header("Block destruction")]
+        [Tooltip("Time in seconds before the block is destroyed after receiving the correct color.")]
+        [SerializeField] private float destructionDelay = 1f;
+
+        private bool isMelting;
 
         private IFlowNode _runtimeOutput;
 
@@ -92,19 +97,33 @@ namespace ColorMelt.Core
         public ColorType ReceiveFlow(ColorType incoming)
         {
             CurrentColor = incoming;
-            if (!IsDestroyed && incoming.Matches(requiredColor))
+
+            if (!IsDestroyed && !isMelting && incoming.Matches(requiredColor))
             {
-                IsDestroyed = true;
-                blockedChannel?.ClearFillBarrier();
-
-                // Keep the logic node alive so it can pass flow to its optional
-                // output, but remove only the visible obstacle.
-                if (blockVisual != null)
-                    blockVisual.SetActive(false);
-
-                OnDestroyedByFlow?.Invoke();
+                StartCoroutine(DestroyAfterDelay());
             }
+
             return CurrentColor;
+        }
+
+        private System.Collections.IEnumerator DestroyAfterDelay()
+        {
+            isMelting = true;
+
+            yield return new WaitForSeconds(destructionDelay);
+
+            if (IsDestroyed)
+                yield break;
+
+            IsDestroyed = true;
+            blockedChannel?.ClearFillBarrier();
+
+            // Keep the logic node alive so it can pass flow to its optional output,
+            // but remove only the visible obstacle.
+            if (blockVisual != null)
+                blockVisual.SetActive(false);
+
+            OnDestroyedByFlow?.Invoke();
         }
 
         public IEnumerable<IFlowNode> GetActiveOutputs()

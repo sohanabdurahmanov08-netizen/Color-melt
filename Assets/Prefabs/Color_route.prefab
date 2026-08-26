@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &3796336670067112408
+--- !u!1001 &9155775738657938156
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 12.2
+      value: 11.421579
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.00000018874874
+      value: -0.000000023806706
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 23.993105
+      value: 7.540564
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -54,19 +54,19 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: e652f6df41c90784494343e2b6eae869, type: 2}
     - target: {fileID: 919132149155446097, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_Name
-      value: Color_rote
+      value: Color_route
+      objectReference: {fileID: 0}
+    - target: {fileID: 5958438921693756439, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
+      propertyPath: m_Range
+      value: 114.59
       objectReference: {fileID: 0}
     - target: {fileID: 5958438921693756439, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_Intensity
-      value: 53.5
+      value: 33.2
       objectReference: {fileID: 0}
     - target: {fileID: 7800219917424603212, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.03764
-      objectReference: {fileID: 0}
-    - target: {fileID: 7800219917424603212, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.010705054
+      value: -6.63764
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -75,29 +75,31 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2682044394164485394}
+      addedObject: {fileID: 8042534003724657817}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2834204652289280584}
+      addedObject: {fileID: 5781827802093164535}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1759593483193247002}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3601182852574575524}
+      addedObject: {fileID: 2393905859055649504}
   m_SourcePrefab: {fileID: 100100000, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
---- !u!1 &4066229052593046665 stripped
+--- !u!23 &741315074069320778 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -772798723794940250, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
+  m_PrefabInstance: {fileID: 9155775738657938156}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8344801049518122941 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
-  m_PrefabInstance: {fileID: 3796336670067112408}
+  m_PrefabInstance: {fileID: 9155775738657938156}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2682044394164485394
+--- !u!114 &8042534003724657817
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4066229052593046665}
+  m_GameObject: {fileID: 8344801049518122941}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3813e7ccbf71f73478221fad553a65c2, type: 3}
@@ -105,53 +107,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.ChannelNode
   output:
     nodeComponent: {fileID: 0}
---- !u!114 &2834204652289280584
+--- !u!114 &5781827802093164535
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4066229052593046665}
+  m_GameObject: {fileID: 8344801049518122941}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00b80a20abb1a2144b7852d11c132125, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.ChannelVisual
-  targetRenderer: {fileID: 4749392916964734846}
+  targetRenderer: {fileID: 741315074069320778}
   fillSpeed: 2
---- !u!114 &1759593483193247002
+  configuredFlowColor: 1
+  editorPreviewFill: 1
+--- !u!114 &2393905859055649504
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4066229052593046665}
+  m_GameObject: {fileID: 8344801049518122941}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 331370af767990949b81121d852d3d8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.LevelFlowManager
-  sources:
-  - {fileID: 0}
+  sources: []
   allSwitches: []
-  allBlocks:
-  - {fileID: 0}
+  allBlocks: []
+  allChannels: []
   moveCounter: {fileID: 0}
---- !u!114 &3601182852574575524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4066229052593046665}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7985293698e74442ac7b9c98804c51c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.DebugFlowTester
-  block: {fileID: 0}
---- !u!23 &4749392916964734846 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -772798723794940250, guid: 14e25eba9d232da42b6bac86384ea06c, type: 3}
-  m_PrefabInstance: {fileID: 3796336670067112408}
-  m_PrefabAsset: {fileID: 0}
