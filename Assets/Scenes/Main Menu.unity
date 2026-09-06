@@ -695,7 +695,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 993230491}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8300000, guid: efccf770bff7715448561fa8dfbec36d, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: mixkit-select-click-1109
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &993230491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -892,8 +904,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1050,6 +1062,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1617608452716681465, guid: c4a195fd825f796448bc638bfd403726, type: 3}
   m_PrefabInstance: {fileID: 3893312500594852319}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1841212428 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2017061196958159207, guid: c4a195fd825f796448bc638bfd403726, type: 3}
+  m_PrefabInstance: {fileID: 3893312500594852319}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1955337731
 GameObject:
   m_ObjectHideFlags: 0
@@ -1174,8 +1197,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.UI.MainMenuUI
   gameplaySceneName: Level 1
-  playButton: {fileID: 0}
-  settingsButton: {fileID: 0}
+  playButton: {fileID: 993230490}
+  settingsButton: {fileID: 1841212428}
+  buttonClickSound: {fileID: 8300000, guid: efccf770bff7715448561fa8dfbec36d, type: 3}
+  buttonClickVolume: 1
 --- !u!1001 &2323232472419154074
 PrefabInstance:
   m_ObjectHideFlags: 0
