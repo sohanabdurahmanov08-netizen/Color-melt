@@ -98,7 +98,12 @@ namespace ColorMelt.Core
         {
             CurrentColor = incoming;
 
-            if (!IsDestroyed && !isMelting && incoming.Matches(requiredColor))
+            // Разрушенный блок больше ничего не делает.
+            if (IsDestroyed)
+                return CurrentColor;
+
+            // Неправильный цвет никогда не разрушает блок.
+            if (!isMelting && incoming.Matches(requiredColor))
             {
                 StartCoroutine(DestroyAfterDelay());
             }
@@ -117,6 +122,12 @@ namespace ColorMelt.Core
 
             IsDestroyed = true;
             blockedChannel?.ClearFillBarrier();
+
+            // +5 монет за разрушенный блок
+            if (CoinManager.Instance != null)
+            {
+                CoinManager.Instance.AddCoinsForBlock();
+            }
 
             // Keep the logic node alive so it can pass flow to its optional output,
             // but remove only the visible obstacle.

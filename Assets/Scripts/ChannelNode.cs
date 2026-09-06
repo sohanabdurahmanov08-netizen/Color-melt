@@ -4,8 +4,10 @@ using UnityEngine;
 namespace ColorMelt.Core
 {
     /// <summary>
-    /// Обычный канал (труба). Хранит текущий цвет для визуализации заполнения
-    /// (шейдер fill-amount, партиклы и т.д.) и передаёт поток на фиксированный выход.
+    /// Канал, который собирает входящие цвета.
+    ///
+    /// Каждый новый поток смешивается с уже полученным цветом.
+    /// В граф дальше передаётся именно итоговая смесь.
     /// </summary>
     public class ChannelNode : MonoBehaviour, IFlowNode
     {
@@ -13,13 +15,14 @@ namespace ColorMelt.Core
 
         public ColorType CurrentColor { get; private set; } = ColorType.None;
 
-        /// <summary>Подпишитесь на это событие в скрипте визуала канала.</summary>
         public System.Action<ColorType> OnFlowChanged;
 
         private IFlowNode _runtimeOutput;
 
-        /// <summary>Connects generated level pieces without changing the prefab asset.</summary>
-        public void SetRuntimeOutput(IFlowNode nextNode) => _runtimeOutput = nextNode;
+        public void SetRuntimeOutput(IFlowNode nextNode)
+        {
+            _runtimeOutput = nextNode;
+        }
 
         public void ResetFlow()
         {
@@ -29,8 +32,18 @@ namespace ColorMelt.Core
 
         public ColorType ReceiveFlow(ColorType incoming)
         {
+            if (incoming.IsEmpty())
+                return CurrentColor;
+
+            var oldColor = CurrentColor;
+
             CurrentColor = CurrentColor.Mix(incoming);
-            OnFlowChanged?.Invoke(CurrentColor);
+
+            // Не вызываем визуальное обновление,
+            // если цвет фактически не изменился.
+            if (oldColor != CurrentColor)
+                OnFlowChanged?.Invoke(CurrentColor);
+
             return CurrentColor;
         }
 
