@@ -2,4 +2,4 @@
 enabled = true
 startup_timeout_sec = 30
 tool_timeout_sec = 300
-url = "https://ai-game.dev/mcp/p/cf19a38e"
+url = "http://localhost:23647/p/cf19a38e"
