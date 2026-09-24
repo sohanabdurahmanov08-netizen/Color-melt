@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.unity.2d.sprite": "1.0.0",
-    "com.unity.ai.navigation": "2.0.12",
+    "com.unity.ai.navigation": "2.0.14",
     "com.unity.collab-proxy": "2.12.4",
     "com.unity.ide.rider": "3.0.39",
     "com.unity.ide.visualstudio": "2.0.27",
@@ -46,11 +46,10 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0",
-    "com.ivanmurzak.unity.mcp": "0.90.0",
-    "com.ivanmurzak.unity.mcp.probuilder": "1.2.31",
-    "com.ivanmurzak.unity.mcp.navigation": "1.0.17",
+    "com.ivanmurzak.unity.mcp": "0.93.0",
     "com.ivanmurzak.unity.mcp.inputsystem": "1.0.17",
-    "com.ivanmurzak.unity.mcp.animation": "1.2.32"
+    "com.ivanmurzak.unity.mcp.probuilder": "1.2.31",
+    "com.ivanmurzak.unity.mcp.navigation": "1.0.17"
   },
   "scopedRegistries": [
     {

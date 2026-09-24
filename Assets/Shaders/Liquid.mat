@@ -69,6 +69,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 2800000, guid: be5214a9d2292a0449495ff82258ddbc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: edc2e1028fd3d0143bccf7bd75d6a5df, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -113,8 +117,10 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EdgeBulge: 0.8
     - _EdgeGlowWidth: 0
     - _EdgeSoftness: 0.001
+    - _EdgeWidth: 0.04
     - _EnvironmentReflections: 1
     - _FillAmount: 0
     - _FlowSpeed: 1.2
@@ -123,9 +129,10 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _HighlightIntensity: 1.5
     - _Metallic: 0
-    - _NormalScrollSpeed: 0.3
-    - _NormalStrength: 1
+    - _NormalScrollSpeed: 1
+    - _NormalStrength: 0.1
     - _NormalTiling: 4
     - _OcclusionStrength: 1
     - _Parallax: 0.005
@@ -134,9 +141,12 @@ Material:
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _Spread: 1
+    - _SpreadWobble: 0.15
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _Tiling: 2
     - _WaveFrequency: 20
     - _WaveStrength: 0.15
     - _WorkflowMode: 1
@@ -145,12 +155,17 @@ Material:
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DeepColor: {r: 1, g: 1, b: 1, a: 0.85}
+    - _EdgeColor: {r: 0.7, g: 0.9, b: 1, a: 1}
     - _EdgeGlow: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmptyColor: {r: 1, g: 1, b: 1, a: 1}
     - _FillColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FlowDirection: {r: 0, g: -1, b: 0, a: 0}
     - _FresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _HighlightColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpreadCenter: {r: 0.5, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

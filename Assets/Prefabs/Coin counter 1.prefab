@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 5538160421133401155}
   - component: {fileID: 4523282379088459312}
   - component: {fileID: 6298792822325926585}
-  - component: {fileID: 88597302890814630}
+  - component: {fileID: 1172261897367454092}
   m_Layer: 5
   m_Name: Coin counter 1
   m_TagString: Untagged
@@ -214,7 +214,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &88597302890814630
+--- !u!114 &1172261897367454092
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -223,9 +223,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2266569215669704397}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c625e31a4dc0c04d942eb4bf12904c7, type: 3}
+  m_Script: {fileID: 11500000, guid: 04c3d1c83ebee644f9838f9346b8cf31, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.CoinManager
-  startingCoins: 0
-  coinsPerBlock: 5
-  coinText: {fileID: 5208849727446295741}
+  m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.UI.CoinCounterUI
+  label: {fileID: 5208849727446295741}
+  punchTarget: {fileID: 5538160421133401155}
+  countSpeed: 6

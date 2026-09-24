@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eddbe6d5d2d5dbe449e08c6236ef11a5, type: 3}
+  m_Name: LevelDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.LevelDatabase
+  levels:
+  - {fileID: 11400000, guid: 863817427b9c69b4e9a6fde6e6d3c8c0, type: 2}
+  - {fileID: 11400000, guid: 5e0319c3f782ed54eab433d1be5d5862, type: 2}
+  - {fileID: 11400000, guid: f32372e70bc2b5f49adfb5f99f5af7d2, type: 2}
+  - {fileID: 11400000, guid: 5780a89649590d642af0bddbf795d38b, type: 2}
+  - {fileID: 11400000, guid: 73da3d9d75bd8a649843c153e394dac1, type: 2}
+  - {fileID: 11400000, guid: 062c541ce0d0db747a97da5d11a89ee7, type: 2}
+  - {fileID: 11400000, guid: 81121d58053c6494cb0aa69f4d431792, type: 2}
+  - {fileID: 11400000, guid: b5e1c447e99daa14aa9a12ba887a68e0, type: 2}
+  - {fileID: 11400000, guid: 9b2afb4ffae4da246ba54a06d9cee561, type: 2}
+  - {fileID: 11400000, guid: 11c3cf46866ebe54ca8be2d5b55c2019, type: 2}
+  - {fileID: 11400000, guid: cb0a054dfc5d5e642932ab7a423ec123, type: 2}
