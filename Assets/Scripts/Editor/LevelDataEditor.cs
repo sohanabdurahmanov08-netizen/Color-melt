@@ -75,6 +75,15 @@ namespace ColorMelt.Editor
             if (level.BlockCount == 0)
                 return ("Add at least one block.", MessageType.Error);
 
+            var blockColors = level.routes.SelectMany(route => route.blocks).Select(block => block.color).Distinct().ToList();
+            if (blockColors.Contains(ColorType.None) || blockColors.Contains(ColorType.Mud))
+                return ("✖ None and Mud blocks can never melt.", MessageType.Error);
+            text.AppendLine("Blocks: " + string.Join(", ", blockColors.Select(color =>
+            {
+                var recipe = color.Recipe();
+                return recipe.Count > 1 ? $"{color} ({string.Join(" + ", recipe)})" : color.ToString();
+            })));
+
             var start = new FlowModel(level);
             if (start.FindMeltable().Count > 0)
             {

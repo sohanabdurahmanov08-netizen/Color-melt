@@ -12,15 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da6ce94f9ee67c040bb8f462588c8240, type: 3}
   m_Name: Level_05
   m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.LevelData
-  maxMoves: 3
+  maxMoves: 4
   tutorial: 0
   routes:
-  - color: 1
-    blocks: []
-  - color: 2
-    blocks:
-    - color: 7
-      position: 0.85
   - color: 3
+    blocks:
+    - color: 20
+      position: 0.85
+  - color: 9
+    blocks:
+    - color: 20
+      position: 0.62
+    - color: 19
+      position: 0.88
+  - color: 2
     blocks: []
-  optimalMoves: 2
+  optimalMoves: 3

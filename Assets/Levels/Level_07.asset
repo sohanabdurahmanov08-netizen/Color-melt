@@ -15,18 +15,18 @@ MonoBehaviour:
   maxMoves: 4
   tutorial: 0
   routes:
-  - color: 3
+  - color: 8
+    blocks:
+    - color: 14
+      position: 0.85
+  - color: 4
+    blocks:
+    - color: 21
+      position: 0.85
+  - color: 9
     blocks: []
   - color: 1
     blocks:
-    - color: 6
-      position: 0.85
-  - color: 2
-    blocks:
-    - color: 4
-      position: 0.85
-  - color: 3
-    blocks:
-    - color: 5
+    - color: 18
       position: 0.85
   optimalMoves: 3

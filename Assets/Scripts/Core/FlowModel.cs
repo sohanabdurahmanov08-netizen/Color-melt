@@ -35,8 +35,9 @@ namespace ColorMelt.Core
     /// Every route has a source that pours into its own channel or into a
     /// neighbouring one. A channel's paint is the mix of every source pouring
     /// into it. Paint runs down the channel until the first intact block; if
-    /// the paint has exactly the block's colour the block melts. After any
-    /// melt all sources return to their own channels.
+    /// the paint has exactly the block's colour the block melts (Mud never
+    /// melts anything, see ColorType.Mix). After any melt all sources return
+    /// to their own channels.
     /// </summary>
     public sealed class FlowModel
     {
@@ -103,6 +104,19 @@ namespace ColorMelt.Core
             }
         }
 
+        public int IntactBlockCount
+        {
+            get
+            {
+                var count = 0;
+                foreach (var route in _melted)
+                    foreach (var melted in route)
+                        if (!melted)
+                            count++;
+                return count;
+            }
+        }
+
         /// <summary>Index of the block that currently stops the paint, or -1.</summary>
         public int FirstIntactBlock(int route)
         {
@@ -153,7 +167,7 @@ namespace ColorMelt.Core
             for (var route = 0; route < RouteCount; route++)
             {
                 var block = FirstIntactBlock(route);
-                if (block >= 0 && !_channelColors[route].IsEmpty() && _channelColors[route] == _blocks[route][block])
+                if (block >= 0 && _channelColors[route].Melts(_blocks[route][block]))
                     result.Add(new BlockRef(route, block));
             }
             return result;
