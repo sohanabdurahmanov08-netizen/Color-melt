@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using ColorMelt.Core;
+using ColorMelt.Meta;
 using ColorMelt.UI;
 using UnityEngine;
 
@@ -65,7 +66,7 @@ namespace ColorMelt.Gameplay
             var recipes = new List<string>();
             foreach (var color in fresh)
                 recipes.Add(color.RichRecipe());
-            var message = (fresh.Count == 1 ? "New colour!\n" : "") + string.Join("\n", recipes);
+            var message = (fresh.Count == 1 ? Localization.Get("tutorial.new_colour") + "\n" : "") + string.Join("\n", recipes);
             // Three lines only fit the banner slightly smaller.
             overlay.ShowMessage(fresh.Count > 2 ? $"<size=85%>{message}</size>" : message);
 
@@ -116,7 +117,7 @@ namespace ColorMelt.Gameplay
         private IEnumerator Run(List<Move> solution)
         {
             IsRunning = true;
-            overlay.ShowMessage("Mix paints to melt blocks\nof the same colour!");
+            overlay.ShowMessage(Localization.Get("tutorial.intro"));
             yield return new WaitForSeconds(1.6f);
 
             foreach (var move in solution)
@@ -134,13 +135,14 @@ namespace ColorMelt.Gameplay
                 {
                     // Step 1: pick up the paint.
                     input.TapFilter = route => route == from;
-                    overlay.ShowMessage($"Tap the {from.SourceColor.RichName()} channel");
+                    overlay.ShowMessage(Localization.Format("tutorial.tap_channel", from.SourceColor.RichName()));
                     overlay.PointAt(from.TapWorldPoint, level.Camera);
                     yield return new WaitUntil(() => input.SelectedRoute == from);
 
                     // Step 2: pour it into the neighbour. Cancelling returns to step 1.
                     input.TapFilter = route => route == to;
-                    overlay.ShowMessage($"Now tap {to.SourceColor.RichName()} to pour\n{from.SourceColor.RichName()} into it");
+                    overlay.ShowMessage(Localization.Format("tutorial.pour_into", to.SourceColor.RichName(),
+                        from.SourceColor.RichName()));
                     overlay.PointAt(to.TapWorldPoint, level.Camera);
                     yield return new WaitUntil(() => _poured || input.SelectedRoute != from);
                 }
@@ -149,13 +151,14 @@ namespace ColorMelt.Gameplay
                 input.TapFilter = route => false;
 
                 var melts = preview.FindMeltable().Count > 0;
+                var meltsText = Localization.Format("tutorial.melts", mixed.RichName());
                 if (melts && !targetPaint.IsEmpty() && mixed != targetPaint)
-                    overlay.ShowMessage($"{from.SourceColor.RichName()} + {targetPaint.RichName()} = {mixed.RichName()}!\n" +
-                                        $"{mixed.RichName()} paint melts {mixed.RichName()} blocks");
+                    overlay.ShowMessage(Localization.Format("tutorial.mix", from.SourceColor.RichName(),
+                        targetPaint.RichName(), mixed.RichName()) + "\n" + meltsText);
                 else if (melts)
-                    overlay.ShowMessage($"{mixed.RichName()} paint melts {mixed.RichName()} blocks");
+                    overlay.ShowMessage(meltsText);
                 else
-                    overlay.ShowMessage("Nice! Keep going");
+                    overlay.ShowMessage(Localization.Get("tutorial.keep_going"));
 
                 yield return new WaitForSeconds(0.2f);
                 yield return new WaitUntil(() => !level.IsBusy || level.Model.AllMelted);

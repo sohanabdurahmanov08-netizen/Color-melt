@@ -14,7 +14,8 @@ namespace ColorMelt.UI
     /// </summary>
     public class GameHUD : MonoBehaviour
     {
-        private static readonly string[] Praises = { "Nice!", "Great!", "Splash!", "Awesome!", "Sweet!" };
+        // Localization keys praise.1 .. praise.N.
+        private const int PraiseCount = 5;
 
         [SerializeField] private LevelController level;
         [SerializeField] private RouteInput input;
@@ -22,7 +23,6 @@ namespace ColorMelt.UI
         [Header("Labels")]
         [SerializeField] private TMP_Text levelText;
         [SerializeField] private TMP_Text movesText;
-        [SerializeField] private string movesPrefix = "MOVES: ";
         [SerializeField] private Color lowMovesColor = new Color(1f, 0.35f, 0.35f);
 
         [Header("Buttons")]
@@ -70,6 +70,7 @@ namespace ColorMelt.UI
             level.Poured += OnPoured;
             Progress.HintsChanged += OnHintsChanged;
             Progress.CoinsChanged += OnHintsChanged;
+            Localization.Changed += RefreshLabels;
         }
 
         private void OnDisable()
@@ -80,20 +81,29 @@ namespace ColorMelt.UI
             level.Poured -= OnPoured;
             Progress.HintsChanged -= OnHintsChanged;
             Progress.CoinsChanged -= OnHintsChanged;
+            Localization.Changed -= RefreshLabels;
         }
 
         private void OnStarted()
         {
-            if (levelText != null) levelText.text = $"Level {level.LevelIndex + 1}";
             // The tutorial level teaches the moves itself.
             if (hintButton != null) hintButton.gameObject.SetActive(!level.Level.tutorial);
+            RefreshLabels();
+        }
+
+        /// <summary>Rewrites the HUD text, e.g. after the language changes.</summary>
+        private void RefreshLabels()
+        {
+            if (level.Level == null) return;
+            if (levelText != null) levelText.text = Localization.Format("hud.level", level.LevelIndex + 1);
+            if (movesText != null) movesText.text = Localization.Format("hud.moves", level.MovesLeft);
             RefreshHint();
         }
 
         private void OnMovesChanged(int moves)
         {
             if (movesText == null) return;
-            movesText.text = movesPrefix + moves;
+            movesText.text = Localization.Format("hud.moves", moves);
             movesText.color = moves <= 1 ? lowMovesColor : _movesColor;
             if (_movesPunch != null) StopCoroutine(_movesPunch);
             _movesPunch = StartCoroutine(Punch(movesText.rectTransform, 0.25f));
@@ -104,7 +114,8 @@ namespace ColorMelt.UI
         private void OnBlockMelted(RouteView route, BlockView block)
         {
             if (praiseText == null) return;
-            praiseText.text = $"{Praises[Random.Range(0, Praises.Length)]}\n<size=70%>+{GameConfig.Instance.coinsPerBlock}</size>";
+            var praise = Localization.Get("praise." + Random.Range(1, PraiseCount + 1));
+            praiseText.text = $"{praise}\n<size=70%>+{GameConfig.Instance.coinsPerBlock}</size>";
             if (_praise != null) StopCoroutine(_praise);
             _praise = StartCoroutine(PraiseRoutine());
         }
@@ -114,9 +125,10 @@ namespace ColorMelt.UI
         private void RefreshHint()
         {
             if (hintLabel == null) return;
-            hintLabel.text = Progress.Hints > 0
-                ? $"HINT\n<size=70%>x{Progress.Hints}</size>"
-                : $"HINT\n<size=70%>{GameConfig.Instance.hintCost} coins</size>";
+            var price = Progress.Hints > 0
+                ? "x" + Progress.Hints
+                : Localization.Plural("count.coins", GameConfig.Instance.hintCost);
+            hintLabel.text = $"{Localization.Get("hud.hint")}\n<size=70%>{price}</size>";
         }
 
         private void UseHint()
@@ -126,7 +138,7 @@ namespace ColorMelt.UI
             var hint = level.FindHint();
             if (!hint.HasValue)
             {
-                Toast.Show(level.MovesLeft > 0 ? "No solution from here. Try restart!" : "No moves left");
+                Toast.Show(Localization.Get(level.MovesLeft > 0 ? "toast.no_solution" : "toast.no_moves"));
                 return;
             }
 
@@ -134,7 +146,7 @@ namespace ColorMelt.UI
                 Progress.AddHints(-1);
             else if (!Progress.TrySpendCoins(GameConfig.Instance.hintCost))
             {
-                Toast.Show("Not enough coins");
+                Toast.Show(Localization.Get("toast.not_enough_coins"));
                 return;
             }
 

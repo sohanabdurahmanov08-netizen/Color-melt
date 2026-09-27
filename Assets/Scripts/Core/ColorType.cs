@@ -148,9 +148,15 @@ namespace ColorMelt.Core
             return recipe;
         }
 
-        /// <summary>Upper-case name for UI text, e.g. "SKY BLUE".</summary>
+        /// <summary>
+        /// Upper-case name in the player's language, e.g. "SKY BLUE" or
+        /// "ГОЛУБОЙ" (localization key color.SkyBlue).
+        /// </summary>
         public static string DisplayName(this ColorType type)
         {
+            if (Meta.Localization.TryGet("color." + type, out var localized))
+                return localized;
+
             var name = type.ToString();
             var text = new System.Text.StringBuilder(name.Length + 4);
             for (var i = 0; i < name.Length; i++)

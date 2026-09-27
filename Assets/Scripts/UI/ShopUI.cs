@@ -26,21 +26,28 @@ namespace ColorMelt.UI
         private void OnEnable()
         {
             Progress.HintsChanged += OnChanged;
+            Localization.Changed += Refresh;
             Refresh();
         }
 
-        private void OnDisable() => Progress.HintsChanged -= OnChanged;
+        private void OnDisable()
+        {
+            Progress.HintsChanged -= OnChanged;
+            Localization.Changed -= Refresh;
+        }
 
         private void OnChanged(int _) => Refresh();
 
         private void Refresh()
         {
             var config = GameConfig.Instance;
-            if (hintsText != null) hintsText.text = $"You have {Progress.Hints} hints";
+            if (hintsText != null) hintsText.text = Localization.Plural("count.hints_owned", Progress.Hints);
             if (buyHintsLabel != null)
-                buyHintsLabel.text = $"{config.hintPackSize} HINTS\n<size=70%>{config.hintPackCost} coins</size>";
+                buyHintsLabel.text = $"{Localization.Plural("count.hint_pack", config.hintPackSize)}\n" +
+                                     $"<size=70%>{Localization.Plural("count.coins", config.hintPackCost)}</size>";
             if (freeCoinsLabel != null)
-                freeCoinsLabel.text = $"+{config.freeCoinsReward} COINS\n<size=70%>watch ad</size>";
+                freeCoinsLabel.text = $"{Localization.Plural("count.coins_reward", config.freeCoinsReward)}\n" +
+                                      $"<size=70%>{Localization.Get("common.watch_ad")}</size>";
         }
 
         private void BuyHints()
@@ -48,18 +55,18 @@ namespace ColorMelt.UI
             var config = GameConfig.Instance;
             if (!Progress.TrySpendCoins(config.hintPackCost))
             {
-                Toast.Show("Not enough coins");
+                Toast.Show(Localization.Get("toast.not_enough_coins"));
                 return;
             }
 
             Progress.AddHints(config.hintPackSize);
-            Toast.Show($"+{config.hintPackSize} hints!");
+            Toast.Show(Localization.Plural("count.hints_added", config.hintPackSize));
         }
 
         private void FreeCoins()
         {
             RewardedAds.Show("shop_free_coins", () => Progress.AddCoins(GameConfig.Instance.freeCoinsReward),
-                () => Toast.Show("Ad not available"));
+                () => Toast.Show(Localization.Get("toast.ad_unavailable")));
         }
     }
 }

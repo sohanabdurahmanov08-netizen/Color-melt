@@ -1,0 +1,126 @@
+# Color Melt localization. Tab-separated: key, then one column per language
+# (en, ru, uz). Edit in any spreadsheet and save as tab-separated UTF-8 text.
+# \n is a line break, {0} {1} {2} are values filled in by the game.
+# Plural keys end in .one/.few/.many/.other: English uses one/other,
+# Russian one/few/many, Uzbek other. An empty cell falls back to English.
+key	en	ru	uz
+
+# Buttons drawn on the text-free sprites
+btn.play	Play	Играть	O‘ynash
+btn.levels	Levels	Уровни	Bosqichlar
+btn.achievements	Achievements	Достижения	Yutuqlar
+btn.shop	Shop	Магазин	Do‘kon
+btn.home	Home	Домой	Bosh sahifa
+btn.resume	Resume	Продолжить	Davom etish
+btn.restart	Restart	Заново	Qaytadan
+btn.back	Back	Назад	Orqaga
+btn.next_level	Next Level	Далее	Keyingisi
+btn.menu	Menu	Меню	Menyu
+btn.retry	Retry	Ещё раз	Qayta urinish
+
+# Window titles
+title.settings	SETTINGS	НАСТРОЙКИ	SOZLAMALAR
+title.shop	SHOP	МАГАЗИН	DO‘KON
+title.levels	LEVELS	УРОВНИ	BOSQICHLAR
+title.paused	PAUSED	ПАУЗА	PAUZA
+
+# Settings
+settings.sound	SOUND	ЗВУК	OVOZ
+settings.music	MUSIC	МУЗЫКА	MUSIQA
+settings.vibration	VIBRATION	ВИБРАЦИЯ	TEBRANISH
+settings.on	ON	ВКЛ	YONIQ
+settings.off	OFF	ВЫКЛ	O‘CHIQ
+settings.toggle	{0}: {1}	{0}: {1}	{0}: {1}
+settings.language	LANGUAGE	ЯЗЫК	TIL
+
+# Main menu and HUD
+menu.level	LEVEL {0}	УРОВЕНЬ {0}	{0}-BOSQICH
+hud.level	Level {0}	Уровень {0}	{0}-bosqich
+hud.moves	MOVES: {0}	ХОДЫ: {0}	YURISHLAR: {0}
+hud.hint	HINT	ПОДСКАЗКА	MASLAHAT
+
+# Praise when blocks melt
+praise.1	Nice!	Отлично!	Zo‘r!
+praise.2	Great!	Супер!	Ajoyib!
+praise.3	Splash!	Плюх!	Shalop!
+praise.4	Awesome!	Круто!	Qoyil!
+praise.5	Sweet!	Здорово!	Barakalla!
+
+# Win and lose windows
+win.subtitle	LEVEL {0} COMPLETE!	УРОВЕНЬ {0} ПРОЙДЕН!	{0}-BOSQICH YAKUNLANDI!
+win.claim_x2	CLAIM x2\n<size=65%>watch ad</size>	ЗАБРАТЬ x2\n<size=65%>за рекламу</size>	x2 OLISH\n<size=65%>reklama ko‘rib</size>
+lose.out_of_moves	OUT OF MOVES	ХОДЫ ЗАКОНЧИЛИСЬ	YURISHLAR TUGADI
+lose.blocks_left.one	Only {0} block left!	Остался всего {0} блок!	Atigi {0} ta blok qoldi!
+lose.blocks_left.few		Осталось всего {0} блока!	
+lose.blocks_left.many		Осталось всего {0} блоков!	
+lose.blocks_left.other	Only {0} blocks left!		Atigi {0} ta blok qoldi!
+common.watch_ad	watch ad	за рекламу	reklama ko‘rib
+
+# Counted things. {0} is the number.
+count.coins.one	{0} coin	{0} монета	{0} tanga
+count.coins.few		{0} монеты	
+count.coins.many		{0} монет	
+count.coins.other	{0} coins		{0} tanga
+count.coins_reward.one	+{0} COIN	+{0} МОНЕТА	+{0} TANGA
+count.coins_reward.few		+{0} МОНЕТЫ	
+count.coins_reward.many		+{0} МОНЕТ	
+count.coins_reward.other	+{0} COINS		+{0} TANGA
+count.moves_reward.one	+{0} MOVE	+{0} ХОД	+{0} YURISH
+count.moves_reward.few		+{0} ХОДА	
+count.moves_reward.many		+{0} ХОДОВ	
+count.moves_reward.other	+{0} MOVES		+{0} YURISH
+count.hint_pack.one	{0} HINT	{0} ПОДСКАЗКА	{0} TA MASLAHAT
+count.hint_pack.few		{0} ПОДСКАЗКИ	
+count.hint_pack.many		{0} ПОДСКАЗОК	
+count.hint_pack.other	{0} HINTS		{0} TA MASLAHAT
+count.hints_owned.one	You have {0} hint	У вас {0} подсказка	Sizda {0} ta maslahat bor
+count.hints_owned.few		У вас {0} подсказки	
+count.hints_owned.many		У вас {0} подсказок	
+count.hints_owned.other	You have {0} hints		Sizda {0} ta maslahat bor
+count.hints_added.one	+{0} hint!	+{0} подсказка!	+{0} ta maslahat!
+count.hints_added.few		+{0} подсказки!	
+count.hints_added.many		+{0} подсказок!	
+count.hints_added.other	+{0} hints!		+{0} ta maslahat!
+
+# Pop-up messages
+toast.not_enough_coins	Not enough coins	Недостаточно монет	Tangalar yetarli emas
+toast.no_solution	No solution from here. Try restart!	Отсюда уже не решить. Начните заново!	Bu holatdan yechim yo‘q. Qaytadan boshlang!
+toast.no_moves	No moves left	Ходов не осталось	Yurishlar qolmadi
+toast.ad_unavailable	Ad not available	Реклама недоступна	Reklama mavjud emas
+toast.achievements_soon	Achievements are coming soon!	Достижения скоро появятся!	Yutuqlar tez orada qo‘shiladi!
+
+# Tutorial and new colour banner. {0}, {1}, {2} are colour names.
+tutorial.intro	Mix paints to melt blocks\nof the same colour!	Смешивайте краски, чтобы\nрастопить блоки того же цвета!	Bir xil rangdagi bloklarni eritish\nuchun bo‘yoqlarni aralashtiring!
+tutorial.tap_channel	Tap the {0} channel	Нажмите на {0} канал	{0} kanalni bosing
+tutorial.pour_into	Now tap {0} to pour\n{1} into it	Теперь нажмите на {0} канал,\nчтобы влить в него {1}	Endi {0} kanalni bosing\nva unga {1} bo‘yoqni quying
+tutorial.mix	{0} + {1} = {2}!	{0} + {1} = {2}!	{0} + {1} = {2}!
+tutorial.melts	{0} paint melts {0} blocks	Цвет {0} растапливает\nблоки такого же цвета	{0} bo‘yoq {0} bloklarni eritadi
+tutorial.keep_going	Nice! Keep going	Отлично! Продолжайте	Zo‘r! Davom eting
+tutorial.new_colour	New colour!	Новый цвет!	Yangi rang!
+
+# Colour names
+color.Red	RED	КРАСНЫЙ	QIZIL
+color.Blue	BLUE	СИНИЙ	KO‘K
+color.Yellow	YELLOW	ЖЁЛТЫЙ	SARIQ
+color.Purple	PURPLE	ФИОЛЕТОВЫЙ	BINAFSHA
+color.Green	GREEN	ЗЕЛЁНЫЙ	YASHIL
+color.Orange	ORANGE	ОРАНЖЕВЫЙ	TO‘Q SARIQ
+color.Brown	BROWN	КОРИЧНЕВЫЙ	JIGARRANG
+color.White	WHITE	БЕЛЫЙ	OQ
+color.Black	BLACK	ЧЁРНЫЙ	QORA
+color.Gray	GRAY	СЕРЫЙ	KULRANG
+color.Pink	PINK	РОЗОВЫЙ	PUSHTI
+color.SkyBlue	SKY BLUE	ГОЛУБОЙ	HAVORANG
+color.Cream	CREAM	КРЕМОВЫЙ	KREM
+color.Lavender	LAVENDER	ЛАВАНДОВЫЙ	LAVANDA
+color.Mint	MINT	МЯТНЫЙ	YALPIZ
+color.Peach	PEACH	ПЕРСИКОВЫЙ	SHAFTOLI
+color.Beige	BEIGE	БЕЖЕВЫЙ	BEJ
+color.Maroon	MAROON	БОРДОВЫЙ	BORDO
+color.Navy	NAVY	ТЁМНО-СИНИЙ	TO‘Q KO‘K
+color.Olive	OLIVE	ОЛИВКОВЫЙ	ZAYTUN
+color.Plum	PLUM	СЛИВОВЫЙ	OLXO‘RI
+color.DarkGreen	DARK GREEN	ТЁМНО-ЗЕЛЁНЫЙ	TO‘Q YASHIL
+color.Rust	RUST	РЖАВЫЙ	ZANG
+color.Chocolate	CHOCOLATE	ШОКОЛАДНЫЙ	SHOKOLAD
+color.Mud	MUD	ГРЯЗНЫЙ	LOY

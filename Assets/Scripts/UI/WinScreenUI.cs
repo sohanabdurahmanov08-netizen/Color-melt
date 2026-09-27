@@ -63,7 +63,7 @@ namespace ColorMelt.UI
                 star.transform.localScale = Vector3.one;
             }
             if (rewardText != null) rewardText.text = "+0";
-            if (subtitleText != null) subtitleText.text = $"LEVEL {level.LevelIndex + 1} COMPLETE!";
+            if (subtitleText != null) subtitleText.text = Localization.Format("win.subtitle", level.LevelIndex + 1);
             if (doubleButton != null) doubleButton.gameObject.SetActive(false);
 
             window.Open();

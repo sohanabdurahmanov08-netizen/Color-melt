@@ -1,4 +1,5 @@
 using ColorMelt.Gameplay;
+using ColorMelt.Meta;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -33,7 +34,7 @@ namespace ColorMelt.UI
             levelsButton?.onClick.AddListener(() => levelsWindow?.Open());
             settingsButton?.onClick.AddListener(() => settingsWindow?.Open());
             shopButton?.onClick.AddListener(() => shopWindow?.Open());
-            achievementsButton?.onClick.AddListener(() => Toast.Show("Achievements are coming soon!"));
+            achievementsButton?.onClick.AddListener(() => Toast.Show(Localization.Get("toast.achievements_soon")));
 
             if (title != null) _titleScale = title.localScale;
             if (playPulse != null) _playScale = playPulse.localScale;
@@ -41,8 +42,16 @@ namespace ColorMelt.UI
 
         private void OnEnable()
         {
+            Localization.Changed += RefreshLabels;
+            RefreshLabels();
+        }
+
+        private void OnDisable() => Localization.Changed -= RefreshLabels;
+
+        private void RefreshLabels()
+        {
             if (playLevelLabel != null)
-                playLevelLabel.text = $"LEVEL {GameSession.ContinueLevelIndex + 1}";
+                playLevelLabel.text = Localization.Format("menu.level", GameSession.ContinueLevelIndex + 1);
         }
 
         private void Update()

@@ -49,16 +49,18 @@ namespace ColorMelt.UI
         {
             if (continueLabel == null) return;
             var config = GameConfig.Instance;
-            continueLabel.text = Progress.Coins >= config.continueCost
-                ? $"+{config.continueMoves} MOVES\n<size=70%>{config.continueCost} coins</size>"
-                : $"+{config.continueMoves} MOVES\n<size=70%>watch ad</size>";
+            var price = Progress.Coins >= config.continueCost
+                ? Localization.Plural("count.coins", config.continueCost)
+                : Localization.Get("common.watch_ad");
+            continueLabel.text = $"{Localization.Plural("count.moves_reward", config.continueMoves)}\n<size=70%>{price}</size>";
         }
 
         private void RefreshDetail()
         {
             if (detailText == null) return;
             var left = level.Model.IntactBlockCount;
-            detailText.text = $"OUT OF MOVES\n<size=75%>Only {left} block{(left == 1 ? "" : "s")} left!</size>";
+            detailText.text = $"{Localization.Get("lose.out_of_moves")}\n" +
+                              $"<size=75%>{Localization.Plural("lose.blocks_left", left)}</size>";
         }
 
         private void Continue()
@@ -71,7 +73,7 @@ namespace ColorMelt.UI
             }
 
             RewardedAds.Show("lose_continue", () => Resume(config.continueMoves),
-                () => Toast.Show("Ad not available"));
+                () => Toast.Show(Localization.Get("toast.ad_unavailable")));
         }
 
         private void Resume(int moves)
