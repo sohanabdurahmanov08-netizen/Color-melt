@@ -108,3 +108,8 @@ InitTestScene*.unity*
 
 .mcp.json
 .claude/settings.local.json
+
+# Unity crash-recovery scenes and a stray project copy
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
+/uColor_Melt/
