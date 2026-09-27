@@ -16,6 +16,7 @@ namespace ColorMelt.UI
         [SerializeField] private LevelController level;
         [SerializeField] private UIWindow window;
         [SerializeField, Min(0f)] private float showDelay = 0.6f;
+        [SerializeField] private TMP_Text subtitleText;
 
         [Header("Stars")]
         [SerializeField] private Image[] stars;
@@ -62,6 +63,7 @@ namespace ColorMelt.UI
                 star.transform.localScale = Vector3.one;
             }
             if (rewardText != null) rewardText.text = "+0";
+            if (subtitleText != null) subtitleText.text = $"LEVEL {level.LevelIndex + 1} COMPLETE!";
             if (doubleButton != null) doubleButton.gameObject.SetActive(false);
 
             window.Open();

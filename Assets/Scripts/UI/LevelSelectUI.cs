@@ -62,6 +62,34 @@ namespace ColorMelt.UI
                 button.onClick.AddListener(() => GameSession.PlayLevel(levelIndex));
                 _buttons.Add(button);
             }
+
+            CentreRows();
+        }
+
+        /// <summary>
+        /// Lays the buttons out like the grid's GridLayoutGroup, but centres a
+        /// short last row instead of leaving it flush left.
+        /// </summary>
+        private void CentreRows()
+        {
+            var layout = grid.GetComponent<GridLayoutGroup>();
+            if (layout == null || layout.constraint != GridLayoutGroup.Constraint.FixedColumnCount) return;
+            layout.enabled = false;
+
+            var columns = layout.constraintCount;
+            var cell = layout.cellSize;
+            var step = cell + layout.spacing;
+            for (var index = 0; index < _buttons.Count; index++)
+            {
+                var row = index / columns;
+                var inRow = Mathf.Min(columns, _buttons.Count - row * columns);
+                var rect = (RectTransform)_buttons[index].transform;
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.sizeDelta = cell;
+                rect.anchoredPosition = new Vector2((index % columns - (inRow - 1) * 0.5f) * step.x,
+                    -layout.padding.top - cell.y * 0.5f - row * step.y);
+            }
         }
 
         private void AddStars(Transform parent, int earned, bool unlocked)

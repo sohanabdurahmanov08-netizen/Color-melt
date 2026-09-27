@@ -21,6 +21,8 @@ namespace ColorMelt.UI
         [SerializeField] private Button menuButton;
         [SerializeField] private Button continueButton;
         [SerializeField] private TMP_Text continueLabel;
+        [Tooltip("Shows how close the player got, e.g. \"Only 2 blocks left!\"")]
+        [SerializeField] private TMP_Text detailText;
 
         private void Awake()
         {
@@ -38,6 +40,7 @@ namespace ColorMelt.UI
         {
             yield return new WaitForSeconds(showDelay);
             RefreshContinue();
+            RefreshDetail();
             window.Open();
             AudioManager.PlayLose();
         }
@@ -49,6 +52,13 @@ namespace ColorMelt.UI
             continueLabel.text = Progress.Coins >= config.continueCost
                 ? $"+{config.continueMoves} MOVES\n<size=70%>{config.continueCost} coins</size>"
                 : $"+{config.continueMoves} MOVES\n<size=70%>watch ad</size>";
+        }
+
+        private void RefreshDetail()
+        {
+            if (detailText == null) return;
+            var left = level.Model.IntactBlockCount;
+            detailText.text = $"OUT OF MOVES\n<size=75%>Only {left} block{(left == 1 ? "" : "s")} left!</size>";
         }
 
         private void Continue()
