@@ -43,6 +43,9 @@ namespace ColorMelt.UI
                 Refresh();
             }
 
+            // Only touch the transform while punching; idle scale writes
+            // would rebuild the canvas every frame.
+            if (_punch <= 0f) return;
             _punch = Mathf.MoveTowards(_punch, 0f, Time.unscaledDeltaTime * 4f);
             if (punchTarget != null)
                 punchTarget.localScale = Vector3.one * (1f + 0.2f * Mathf.Sin(_punch * Mathf.PI));

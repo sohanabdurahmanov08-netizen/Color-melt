@@ -82,7 +82,7 @@ namespace ColorMelt.Gameplay
 
         private void Update()
         {
-            if (_source != null)
+            if (_source != null && _source.localRotation != _sourceTarget)
                 _source.localRotation = Quaternion.Slerp(_source.localRotation, _sourceTarget,
                     1f - Mathf.Exp(-10f * Time.deltaTime));
         }

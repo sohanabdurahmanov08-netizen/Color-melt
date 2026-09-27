@@ -137,11 +137,19 @@ namespace ColorMelt.Gameplay
 
         private void Update()
         {
-            _currentFill = Mathf.MoveTowards(_currentFill, _targetFill, fillSpeed * Time.deltaTime);
-            _currentColor = Color.Lerp(_currentColor, _targetColor, 1f - Mathf.Exp(-colorBlendSpeed * Time.deltaTime));
-            ApplyLiquid();
+            // Settled liquid and an unlit body keep their property blocks;
+            // the flow itself is animated by the shader.
+            if (_currentFill != _targetFill || _currentColor != _targetColor)
+            {
+                _currentFill = Mathf.MoveTowards(_currentFill, _targetFill, fillSpeed * Time.deltaTime);
+                _currentColor = Color.Lerp(_currentColor, _targetColor, 1f - Mathf.Exp(-colorBlendSpeed * Time.deltaTime));
+                if (_currentColor == _targetColor) _currentColor = _targetColor;
+                ApplyLiquid();
+            }
 
             var targetWeight = _highlight == ChannelHighlight.None ? 0f : 1f;
+            if (targetWeight == 0f && _highlightWeight == 0f && transform.localPosition == _restLocalPosition)
+                return;
             _highlightWeight = Mathf.MoveTowards(_highlightWeight, targetWeight, Time.deltaTime * 6f);
 
             var pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * pulseSpeed);

@@ -61,10 +61,19 @@ namespace ColorMelt.UI
 
         private void Update()
         {
+            // A resting button leaves its transform alone: every scale write
+            // makes the whole canvas rebuild its batches.
+            if (_scale == _target && _velocity == 0f) return;
+
             var dt = Mathf.Min(Time.unscaledDeltaTime, 1f / 30f);
             var acceleration = stiffness * (_target - _scale) - damping * _velocity;
             _velocity += acceleration * dt;
             _scale += _velocity * dt;
+            if (Mathf.Abs(_target - _scale) < 0.0005f && Mathf.Abs(_velocity) < 0.005f)
+            {
+                _scale = _target;
+                _velocity = 0f;
+            }
             transform.localScale = _baseScale * _scale;
         }
     }
