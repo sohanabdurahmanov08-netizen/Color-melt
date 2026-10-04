@@ -65,8 +65,12 @@ namespace ColorMelt.UI
 
         private void FreeCoins()
         {
-            RewardedAds.Show("shop_free_coins", () => Progress.AddCoins(GameConfig.Instance.freeCoinsReward),
-                () => Toast.Show(Localization.Get("toast.ad_unavailable")));
+            if (!RewardedAds.IsReady)
+            {
+                Toast.Show(Localization.Get("toast.ad_unavailable"));
+                return;
+            }
+            RewardedAds.Show("shop_free_coins", () => Progress.AddCoins(GameConfig.Instance.freeCoinsReward));
         }
     }
 }

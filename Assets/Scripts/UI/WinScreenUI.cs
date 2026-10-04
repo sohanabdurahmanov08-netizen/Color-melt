@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using ColorMelt.Gameplay;
 using ColorMelt.Meta;
@@ -32,15 +33,12 @@ namespace ColorMelt.UI
         [SerializeField] private Button menuButton;
 
         private LevelResult _result;
+        private bool _leaving;
 
         private void Awake()
         {
-            nextButton?.onClick.AddListener(() =>
-            {
-                if (GameSession.HasNextLevel) GameSession.NextLevel();
-                else GameSession.ToMenu();
-            });
-            menuButton?.onClick.AddListener(GameSession.ToMenu);
+            nextButton?.onClick.AddListener(() => Leave(GameSession.HasNextLevel ? GameSession.NextLevel : GameSession.ToMenu));
+            menuButton?.onClick.AddListener(() => Leave(GameSession.ToMenu));
             doubleButton?.onClick.AddListener(DoubleReward);
         }
 
@@ -50,7 +48,16 @@ namespace ColorMelt.UI
         private void OnWon(LevelResult result)
         {
             _result = result;
+            _leaving = false;
             StartCoroutine(ShowRoutine());
+        }
+
+        /// <summary>Leaves the level, with an interstitial first if the ad pacing allows one.</summary>
+        private void Leave(Action go)
+        {
+            if (_leaving) return;
+            _leaving = true;
+            InterstitialAds.AfterLevel(level.LevelIndex, true, go);
         }
 
         private IEnumerator ShowRoutine()

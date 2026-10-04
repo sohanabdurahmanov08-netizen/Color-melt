@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dad220c45857eb843802d70fbfa8775b, type: 3}
+  m_Name: AdsConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Meta.AdsConfig
+  androidAppKey: 25b63cf85
+  androidRewardedId: syz3d8ekts22q0or
+  androidInterstitialId: h3xw38h9214adgxo
+  iosAppKey: 25c43a4a5
+  iosRewardedId: l1quzz1xmmdhw5er
+  iosInterstitialId: obg6ohwts3y690ks
+  pacing: 2
+  levelsBetweenAds: 3
+  secondsBetweenAds: 60
+  firstLevelWithAds: 3
+  afterLostLevels: 0
+  launchTestSuite: 0
+  testAdSeconds: 5

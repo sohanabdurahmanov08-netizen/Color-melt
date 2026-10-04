@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using ColorMelt.Gameplay;
 using ColorMelt.Meta;
@@ -24,10 +25,12 @@ namespace ColorMelt.UI
         [Tooltip("Shows how close the player got, e.g. \"Only 2 blocks left!\"")]
         [SerializeField] private TMP_Text detailText;
 
+        private bool _leaving;
+
         private void Awake()
         {
-            retryButton?.onClick.AddListener(GameSession.Restart);
-            menuButton?.onClick.AddListener(GameSession.ToMenu);
+            retryButton?.onClick.AddListener(() => Leave(GameSession.Restart));
+            menuButton?.onClick.AddListener(() => Leave(GameSession.ToMenu));
             continueButton?.onClick.AddListener(Continue);
         }
 
@@ -39,6 +42,7 @@ namespace ColorMelt.UI
         private IEnumerator ShowRoutine()
         {
             yield return new WaitForSeconds(showDelay);
+            _leaving = false;
             RefreshContinue();
             RefreshDetail();
             window.Open();
@@ -72,8 +76,20 @@ namespace ColorMelt.UI
                 return;
             }
 
-            RewardedAds.Show("lose_continue", () => Resume(config.continueMoves),
-                () => Toast.Show(Localization.Get("toast.ad_unavailable")));
+            if (!RewardedAds.IsReady)
+            {
+                Toast.Show(Localization.Get("toast.ad_unavailable"));
+                return;
+            }
+            RewardedAds.Show("lose_continue", () => Resume(config.continueMoves));
+        }
+
+        /// <summary>Leaves the level; AdsConfig decides whether a lost level may end with an interstitial.</summary>
+        private void Leave(Action go)
+        {
+            if (_leaving) return;
+            _leaving = true;
+            InterstitialAds.AfterLevel(level.LevelIndex, false, go);
         }
 
         private void Resume(int moves)

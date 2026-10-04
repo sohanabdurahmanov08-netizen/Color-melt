@@ -91,6 +91,16 @@ toast.no_moves	No moves left	Ходов не осталось	Yurishlar qolmadi
 toast.ad_unavailable	Ad not available	Реклама недоступна	Reklama mavjud emas
 toast.achievements_soon	Achievements are coming soon!	Достижения скоро появятся!	Yutuqlar tez orada qo‘shiladi!
 
+# Simulated test ad (Editor and desktop only; phones show LevelPlay ads). {0} is seconds.
+ads.test_title	TEST AD	ТЕСТОВАЯ РЕКЛАМА	TEST REKLAMA
+ads.kind.rewarded	Ad for a reward	Реклама за награду	Mukofotli reklama
+ads.kind.interstitial	Ad between levels	Реклама между уровнями	Darajalar orasidagi reklama
+ads.reward_in	Reward in {0} s	Награда через {0} с	Mukofot {0} soniyadan so‘ng
+ads.close_in	You can close it in {0} s	Закрыть можно через {0} с	{0} soniyadan so‘ng yopish mumkin
+ads.reward_earned	Reward earned!	Награда получена!	Mukofot olindi!
+ads.skip	Skip (no reward)	Пропустить (без награды)	O‘tkazib yuborish (mukofotsiz)
+ads.close	Close	Закрыть	Yopish
+
 # Tutorial and new colour banner. {0}, {1}, {2} are colour names.
 tutorial.intro	Mix paints to melt blocks\nof the same colour!	Смешивайте краски, чтобы\nрастопить блоки того же цвета!	Bir xil rangdagi bloklarni eritish\nuchun bo‘yoqlarni aralashtiring!
 tutorial.tap_channel	Tap the {0} channel	Нажмите на {0} канал	{0} kanalni bosing
