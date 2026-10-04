@@ -1,22 +1,27 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace ColorMelt.UI
 {
     /// <summary>
     /// Pop-up window: fades its CanvasGroup and bounces the content in with an
     /// ease-out-back. While hidden it neither draws nor blocks taps. Use
-    /// Open/Close/Toggle from code or from a button's OnClick.
+    /// Open/Close/Toggle from code or from a button's OnClick. With
+    /// closeOnBackgroundTap a tap on the dim background outside the content
+    /// closes it too.
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
-    public class UIWindow : MonoBehaviour
+    public class UIWindow : MonoBehaviour, IPointerClickHandler
     {
         [Tooltip("Part that scales in. The window itself (dim background) only fades.")]
         [SerializeField] private RectTransform content;
         [SerializeField, Min(0.01f)] private float openTime = 0.35f;
         [SerializeField, Min(0.01f)] private float closeTime = 0.18f;
         [SerializeField] private bool startOpen;
+        [Tooltip("Close when the dim background outside the content is tapped.")]
+        [SerializeField] private bool closeOnBackgroundTap;
 
         private CanvasGroup _group;
         private Coroutine _animation;
@@ -53,6 +58,14 @@ namespace ColorMelt.UI
             IsOpen = false;
             Animate(false);
             Closed?.Invoke();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            // Taps on the content bubble up here too; only the background itself counts.
+            if (closeOnBackgroundTap && content != transform
+                && eventData.pointerPressRaycast.gameObject == gameObject)
+                Close();
         }
 
         public void Toggle()

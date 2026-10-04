@@ -47,8 +47,10 @@ praise.4	Awesome!	Круто!	Qoyil!
 praise.5	Sweet!	Здорово!	Barakalla!
 
 # Win and lose windows
+win.title	VICTORY!	ПОБЕДА!	G‘ALABA!
 win.subtitle	LEVEL {0} COMPLETE!	УРОВЕНЬ {0} ПРОЙДЕН!	{0}-BOSQICH YAKUNLANDI!
 win.claim_x2	CLAIM x2\n<size=65%>watch ad</size>	ЗАБРАТЬ x2\n<size=65%>за рекламу</size>	x2 OLISH\n<size=65%>reklama ko‘rib</size>
+lose.title	DEFEAT	ПОРАЖЕНИЕ	MAG‘LUBIYAT
 lose.out_of_moves	OUT OF MOVES	ХОДЫ ЗАКОНЧИЛИСЬ	YURISHLAR TUGADI
 lose.blocks_left.one	Only {0} block left!	Остался всего {0} блок!	Atigi {0} ta blok qoldi!
 lose.blocks_left.few		Осталось всего {0} блока!	

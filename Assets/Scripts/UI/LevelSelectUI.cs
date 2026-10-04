@@ -21,6 +21,8 @@ namespace ColorMelt.UI
         [SerializeField] private Button closeButton;
         [SerializeField] private UIWindow window;
         [SerializeField, Range(0f, 1f)] private float lockedAlpha = 0.4f;
+        [Tooltip("Sprite for levels not reached yet. Without it they are faded by lockedAlpha.")]
+        [SerializeField] private Sprite lockedSprite;
 
         private readonly List<Button> _buttons = new List<Button>();
 
@@ -56,7 +58,9 @@ namespace ColorMelt.UI
                 // Unity's fake-null objects break '??', so check explicitly.
                 var group = button.GetComponent<CanvasGroup>();
                 if (group == null) group = button.gameObject.AddComponent<CanvasGroup>();
-                group.alpha = unlocked ? 1f : lockedAlpha;
+                var showLock = !unlocked && lockedSprite != null && button.image != null;
+                if (showLock) button.image.sprite = lockedSprite;
+                group.alpha = unlocked || showLock ? 1f : lockedAlpha;
 
                 AddStars(button.transform, Progress.GetStars(index), unlocked);
                 button.onClick.AddListener(() => GameSession.PlayLevel(levelIndex));

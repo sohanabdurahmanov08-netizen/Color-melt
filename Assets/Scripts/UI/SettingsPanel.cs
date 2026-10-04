@@ -25,6 +25,14 @@ namespace ColorMelt.UI
         [SerializeField] private Color offColor = new Color(0.9f, 0.3f, 0.4f);
         [SerializeField] private Color idleLanguageColor = Color.white;
 
+        [Header("Sprites (used instead of the colours above when set)")]
+        [SerializeField] private Sprite onSprite;
+        [SerializeField] private Sprite offSprite;
+        [SerializeField] private Sprite currentLanguageSprite;
+        [SerializeField] private Sprite idleLanguageSprite;
+        [SerializeField] private Color currentLanguageLabelColor = Color.white;
+        [SerializeField] private Color idleLanguageLabelColor = Color.white;
+
         private void Awake()
         {
             soundButton?.onClick.AddListener(() => { Progress.SoundOn = !Progress.SoundOn; Apply(); });
@@ -72,8 +80,12 @@ namespace ColorMelt.UI
             for (var index = 0; index < languageButtons.Length; index++)
             {
                 var button = languageButtons[index];
-                if (button != null && button.targetGraphic != null)
-                    button.targetGraphic.color = index == (int)Localization.Current ? onColor : idleLanguageColor;
+                if (button == null) continue;
+                var current = index == (int)Localization.Current;
+                Paint(button, current ? currentLanguageSprite : idleLanguageSprite,
+                    current ? onColor : idleLanguageColor);
+                var label = button.GetComponentInChildren<TMP_Text>();
+                if (label != null) label.color = current ? currentLanguageLabelColor : idleLanguageLabelColor;
             }
         }
 
@@ -82,7 +94,22 @@ namespace ColorMelt.UI
             if (label != null)
                 label.text = Localization.Format("settings.toggle", Localization.Get(nameKey),
                     Localization.Get(on ? "settings.on" : "settings.off"));
-            if (button != null && button.targetGraphic != null) button.targetGraphic.color = on ? onColor : offColor;
+            Paint(button, on ? onSprite : offSprite, on ? onColor : offColor);
+        }
+
+        /// <summary>Swaps the button's sprite when one is given, otherwise tints it.</summary>
+        private static void Paint(Button button, Sprite sprite, Color tint)
+        {
+            if (button == null || button.targetGraphic == null) return;
+            if (sprite != null && button.targetGraphic is Image image)
+            {
+                image.sprite = sprite;
+                image.color = Color.white;
+            }
+            else
+            {
+                button.targetGraphic.color = tint;
+            }
         }
     }
 }
