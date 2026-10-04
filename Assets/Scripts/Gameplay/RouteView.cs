@@ -127,5 +127,31 @@ namespace ColorMelt.Gameplay
             rect = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
             return hasPoint;
         }
+
+        /// <summary>World bounds of every visible part of the route.</summary>
+        public bool TryGetWorldBounds(out Bounds bounds)
+        {
+            var hasBounds = false;
+            bounds = default;
+
+            foreach (var renderer in _renderers)
+            {
+                if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy ||
+                    renderer is LineRenderer || renderer is ParticleSystemRenderer)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            return hasBounds;
+        }
     }
 }

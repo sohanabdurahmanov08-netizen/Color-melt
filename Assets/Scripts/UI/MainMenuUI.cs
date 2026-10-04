@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace ColorMelt.UI
 {
-    /// <summary>Main menu: continue playing, level select, settings, shop.</summary>
+    /// <summary>Main menu: continue playing, level select, settings, shop, achievements.</summary>
     public class MainMenuUI : MonoBehaviour
     {
         [SerializeField] private Button playButton;
@@ -20,6 +20,7 @@ namespace ColorMelt.UI
         [SerializeField] private UIWindow levelsWindow;
         [SerializeField] private UIWindow settingsWindow;
         [SerializeField] private UIWindow shopWindow;
+        [SerializeField] private UIWindow achievementsWindow;
 
         [Header("Idle animation")]
         [SerializeField] private RectTransform title;
@@ -34,7 +35,7 @@ namespace ColorMelt.UI
             levelsButton?.onClick.AddListener(() => levelsWindow?.Open());
             settingsButton?.onClick.AddListener(() => settingsWindow?.Open());
             shopButton?.onClick.AddListener(() => shopWindow?.Open());
-            achievementsButton?.onClick.AddListener(() => Toast.Show(Localization.Get("toast.achievements_soon")));
+            achievementsButton?.onClick.AddListener(() => achievementsWindow?.Open());
 
             if (title != null) _titleScale = title.localScale;
             if (playPulse != null) _playScale = playPulse.localScale;

@@ -23,6 +23,7 @@ title.settings	SETTINGS	НАСТРОЙКИ	SOZLAMALAR
 title.shop	SHOP	МАГАЗИН	DO‘KON
 title.levels	LEVELS	УРОВНИ	BOSQICHLAR
 title.paused	PAUSED	ПАУЗА	PAUZA
+title.achievements	ACHIEVEMENTS	ДОСТИЖЕНИЯ	YUTUQLAR
 
 # Settings
 settings.sound	SOUND	ЗВУК	OVOZ
@@ -89,7 +90,6 @@ toast.not_enough_coins	Not enough coins	Недостаточно монет	Tang
 toast.no_solution	No solution from here. Try restart!	Отсюда уже не решить. Начните заново!	Bu holatdan yechim yo‘q. Qaytadan boshlang!
 toast.no_moves	No moves left	Ходов не осталось	Yurishlar qolmadi
 toast.ad_unavailable	Ad not available	Реклама недоступна	Reklama mavjud emas
-toast.achievements_soon	Achievements are coming soon!	Достижения скоро появятся!	Yutuqlar tez orada qo‘shiladi!
 
 # Simulated test ad (Editor and desktop only; phones show LevelPlay ads). {0} is seconds.
 ads.test_title	TEST AD	ТЕСТОВАЯ РЕКЛАМА	TEST REKLAMA
@@ -109,6 +109,7 @@ tutorial.mix	{0} + {1} = {2}!	{0} + {1} = {2}!	{0} + {1} = {2}!
 tutorial.melts	{0} paint melts {0} blocks	Цвет {0} растапливает\nблоки такого же цвета	{0} bo‘yoq {0} bloklarni eritadi
 tutorial.keep_going	Nice! Keep going	Отлично! Продолжайте	Zo‘r! Davom eting
 tutorial.new_colour	New colour!	Новый цвет!	Yangi rang!
+tutorial.camera	Swipe here to move the camera.\nSwipe up to get closer	Проведите здесь, чтобы двигать камеру.\nВверх — приблизить	Kamerani surish uchun shu yerda suring.\nYaqinlashtirish uchun yuqoriga suring
 
 # Colour names
 color.Red	RED	КРАСНЫЙ	QIZIL
@@ -136,3 +137,74 @@ color.DarkGreen	DARK GREEN	ТЁМНО-ЗЕЛЁНЫЙ	TO‘Q YASHIL
 color.Rust	RUST	РЖАВЫЙ	ZANG
 color.Chocolate	CHOCOLATE	ШОКОЛАДНЫЙ	SHOKOLAD
 color.Mud	MUD	ГРЯЗНЫЙ	LOY
+
+# Achievements window. Names are ach.<id> (ids in Resources/AchievementDatabase),
+# tasks are ach.desc.<stat> with {0} = target, or ach.desc.<stat>.all for "every level".
+ach.summary	Unlocked: {0} of {1}	Получено: {0} из {1}	Olindi: {0} / {1}
+ach.claim	CLAIM	ЗАБРАТЬ	OLISH
+ach.toast	New achievement: {0}!	Новое достижение: {0}!	Yangi yutuq: {0}!
+ach.toast_many	New achievements: {0}!	Новых достижений: {0}!	Yangi yutuqlar: {0}!
+ach.first_win	First Drop	Первая капля	Ilk tomchi
+ach.levels_5	Getting Warm	Входим во вкус	Qiziqib qoldim
+ach.levels_all	Paint Master	Мастер красок	Bo‘yoq ustasi
+ach.stars_10	Rising Star	Восходящая звезда	Chiqayotgan yulduz
+ach.stars_all	Starry Sky	Звёздное небо	Yulduzli osmon
+ach.perfect_1	Flawless	Безупречно	Benuqson
+ach.perfect_5	Perfectionist	Перфекционист	Perfeksionist
+ach.blocks_10	Warm Hands	Тёплые руки	Iliq qo‘llar
+ach.blocks_50	Melting Pot	Плавильный котёл	Eritish qozoni
+ach.blocks_150	Volcano	Вулкан	Vulqon
+ach.pours_50	Young Artist	Юный художник	Yosh rassom
+ach.pours_200	Brush Master	Мастер кисти	Mo‘yqalam ustasi
+ach.chain_2	Double Splash	Двойной удар	Qo‘sh zarba
+ach.spare_2	Moves to Spare	С запасом	Zaxira bilan
+ach.hint_first	Bright Idea	Светлая идея	Yorqin g‘oya
+ach.shopper	Shopper	Покупатель	Xaridor
+ach.second_chance	Second Chance	Второй шанс	Ikkinchi imkoniyat
+ach.coins_1000	Piggy Bank	Копилка	Tanga xazinasi
+ach.desc.LevelsCompleted.one	Complete {0} level	Пройдите {0} уровень	{0} ta bosqichni o‘ting
+ach.desc.LevelsCompleted.few		Пройдите {0} уровня	
+ach.desc.LevelsCompleted.many		Пройдите {0} уровней	
+ach.desc.LevelsCompleted.other	Complete {0} levels		{0} ta bosqichni o‘ting
+ach.desc.LevelsCompleted.all	Complete every level	Пройдите все уровни	Barcha bosqichlarni o‘ting
+ach.desc.TotalStars.one	Collect {0} star	Соберите {0} звезду	{0} ta yulduz to‘plang
+ach.desc.TotalStars.few		Соберите {0} звезды	
+ach.desc.TotalStars.many		Соберите {0} звёзд	
+ach.desc.TotalStars.other	Collect {0} stars		{0} ta yulduz to‘plang
+ach.desc.TotalStars.all	Collect every star	Соберите все звёзды	Barcha yulduzlarni to‘plang
+ach.desc.PerfectLevels.one	Get 3 stars on {0} level	Получите 3 звезды на {0} уровне	{0} ta bosqichda 3 yulduz oling
+ach.desc.PerfectLevels.few		Получите 3 звезды на {0} уровнях	
+ach.desc.PerfectLevels.many		Получите 3 звезды на {0} уровнях	
+ach.desc.PerfectLevels.other	Get 3 stars on {0} levels		{0} ta bosqichda 3 yulduz oling
+ach.desc.BlocksMelted.one	Melt {0} block	Растопите {0} блок	{0} ta blokni eriting
+ach.desc.BlocksMelted.few		Растопите {0} блока	
+ach.desc.BlocksMelted.many		Растопите {0} блоков	
+ach.desc.BlocksMelted.other	Melt {0} blocks		{0} ta blokni eriting
+ach.desc.Pours.one	Pour paint {0} time	Перелейте краску {0} раз	Bo‘yoqni {0} marta quying
+ach.desc.Pours.few		Перелейте краску {0} раза	
+ach.desc.Pours.many		Перелейте краску {0} раз	
+ach.desc.Pours.other	Pour paint {0} times		Bo‘yoqni {0} marta quying
+ach.desc.BestChain.one	Melt {0} block with one pour	Растопите {0} блок за один ход	Bir yurishda {0} ta blokni eriting
+ach.desc.BestChain.few		Растопите {0} блока за один ход	
+ach.desc.BestChain.many		Растопите {0} блоков за один ход	
+ach.desc.BestChain.other	Melt {0} blocks with one pour		Bir yurishda {0} ta blokni eriting
+ach.desc.MovesLeftAtWin.one	Win with {0} move to spare	Победите, сохранив {0} ход	{0} ta yurish qoldirib yuting
+ach.desc.MovesLeftAtWin.few		Победите, сохранив {0} хода	
+ach.desc.MovesLeftAtWin.many		Победите, сохранив {0} ходов	
+ach.desc.MovesLeftAtWin.other	Win with {0} moves to spare		{0} ta yurish qoldirib yuting
+ach.desc.HintsUsed.one	Use a hint	Воспользуйтесь подсказкой	Maslahatdan foydalaning
+ach.desc.HintsUsed.few		Используйте {0} подсказки	
+ach.desc.HintsUsed.many		Используйте {0} подсказок	
+ach.desc.HintsUsed.other	Use {0} hints		{0} ta maslahatdan foydalaning
+ach.desc.HintPacksBought.one	Buy hints in the shop	Купите подсказки в магазине	Do‘kondan maslahat xarid qiling
+ach.desc.HintPacksBought.few		Купите подсказки в магазине {0} раза	
+ach.desc.HintPacksBought.many		Купите подсказки в магазине {0} раз	
+ach.desc.HintPacksBought.other	Buy hints in the shop {0} times		Do‘kondan {0} marta maslahat xarid qiling
+ach.desc.Continues.one	Take extra moves after running out	Возьмите дополнительные ходы	Qo‘shimcha yurish oling
+ach.desc.Continues.few		Возьмите дополнительные ходы {0} раза	
+ach.desc.Continues.many		Возьмите дополнительные ходы {0} раз	
+ach.desc.Continues.other	Take extra moves {0} times		{0} marta qo‘shimcha yurish oling
+ach.desc.CoinsEarned.one	Earn {0} coin	Заработайте {0} монету	{0} ta tanga yig‘ing
+ach.desc.CoinsEarned.few		Заработайте {0} монеты	
+ach.desc.CoinsEarned.many		Заработайте {0} монет	
+ach.desc.CoinsEarned.other	Earn {0} coins		{0} ta tanga yig‘ing

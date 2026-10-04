@@ -340,6 +340,63 @@ coin(os.path.join(ART, 'coin.png'))
 star(os.path.join(ART, 'star_on.png'), True)
 star(os.path.join(ART, 'star_off.png'), False)
 
+
+# ---------------------------------------------------------------- achievement icons
+def star_glyph(cv):
+    return star_shape(cv, 64, 70, 54, 24) - 6
+
+
+def flag(cv):
+    pole = cv.rrect(28, 14, 40, 108, 5)
+    cloth = cv.polygon([(40, 20), (104, 24), (88, 44), (104, 64), (40, 62)]) - 3
+    base = cv.rrect(18, 102, 52, 114, 5)
+    return U(pole, cloth, base)
+
+
+def crown(cv):
+    body = cv.polygon([(20, 42), (44, 66), (64, 32), (84, 66), (108, 42), (98, 94), (30, 94)]) - 4
+    tips = U(cv.circle(20, 40, 9), cv.circle(64, 28, 10), cv.circle(108, 40, 9))
+    band = cv.rrect(28, 100, 100, 112, 5)
+    return U(body, tips, band)
+
+
+def drop(cv):
+    # Circle plus the two tangents from the tip: a clean teardrop.
+    d = U(cv.circle(64, 78, 32), cv.polygon([(64, 12), (92, 62), (64, 78), (36, 62)]) - 1)
+    shine = I(np.abs(cv.circle(64, 80, 20)) - 4.5, cv.x - 58, 82 - cv.y)
+    return S(d, shine)
+
+
+def brush(cv):
+    handle = cv.segment(100, 16, 70, 56, 8)
+    ferrule = cv.segment(68, 58, 56, 72, 13)
+    # Bristles: a teardrop pointing down-left (circle plus tangents to the tip).
+    tip = U(cv.circle(50, 80, 16), cv.polygon([(24, 114), (34.6, 75.8), (50, 80), (58.1, 93.8)]) - 1)
+    return U(handle, ferrule, tip)
+
+
+def bolt(cv):
+    return cv.polygon([(76, 10), (28, 70), (60, 70), (48, 118), (100, 52), (68, 52), (84, 10)]) - 3
+
+
+def hourglass(cv):
+    caps = U(cv.rrect(28, 12, 100, 26, 6), cv.rrect(28, 102, 100, 116, 6))
+    glass = np.abs(cv.polygon([(38, 26), (90, 26), (68, 64), (90, 102), (38, 102), (60, 64)]) - 2) - 5
+    sand = U(cv.polygon([(46, 98), (82, 98), (64, 80)]) - 2, cv.polygon([(52, 36), (76, 36), (64, 50)]) - 2)
+    return U(caps, glass, sand)
+
+
+def coins(cv):
+    disc = cv.circle(64, 64, 46)
+    ring = np.abs(cv.circle(64, 64, 33)) - 3.5
+    mark = smin(cv.circle(64, 74, 13), cv.polygon([(64, 40), (76, 66), (52, 66)]), 5)
+    return S(disc, U(ring, mark))
+
+
+for nm, fn in [('star', star_glyph), ('flag', flag), ('crown', crown), ('drop', drop), ('brush', brush),
+               ('bolt', bolt), ('hourglass', hourglass), ('coins', coins)]:
+    icon(nm, fn)
+
 print('9-slice borders (left, bottom, right, top):')
 for k, v in borders.items():
     print('  %-14s %d %d %d %d' % ((k,) + tuple(int(round(x)) for x in v)))

@@ -12,11 +12,13 @@ namespace ColorMelt.Gameplay
     }
 
     /// <summary>
-    /// Visual of one channel model (Color_route prefab). Animates the liquid
-    /// shader (_FillAmount / _FillColor), pulses the channel body while it is
+    /// Visual of one channel model (Color_route prefab). Drives the liquid
+    /// shader (ColorMelt/ChannelFillURP), pulses the channel body while it is
     /// selected or offered as a pour target, and maps a 0..1 position along
     /// the channel to a point on the liquid surface for placing blocks.
     ///
+    /// The shader animates foam, waves, colour mixing and sloshing on its own
+    /// from timestamps, so a settled channel costs no per-frame updates.
     /// Liquid shader requirement: UV.x runs along the channel, 0 at the inlet.
     /// </summary>
     public class ChannelView : MonoBehaviour
@@ -28,7 +30,6 @@ namespace ColorMelt.Gameplay
 
         [Header("Liquid")]
         [SerializeField, Min(0.1f)] private float fillSpeed = 1.6f;
-        [SerializeField, Min(0.1f)] private float colorBlendSpeed = 4f;
 
         [Header("Highlight")]
         [SerializeField, Min(0f)] private float pulseSpeed = 7f;
@@ -38,6 +39,13 @@ namespace ColorMelt.Gameplay
 
         private static readonly int FillAmountId = Shader.PropertyToID("_FillAmount");
         private static readonly int FillColorId = Shader.PropertyToID("_FillColor");
+        private static readonly int PrevColorId = Shader.PropertyToID("_PrevColor");
+        private static readonly int FlowTimeId = Shader.PropertyToID("_FlowTime");
+        private static readonly int MixTimeId = Shader.PropertyToID("_MixTime");
+        private static readonly int SloshTimeId = Shader.PropertyToID("_SloshTime");
+        private static readonly int MixSpeedId = Shader.PropertyToID("_MixSpeed");
+        private static readonly int ChannelLengthId = Shader.PropertyToID("_ChannelLength");
+        private const float Never = -1000f;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
 
@@ -45,8 +53,13 @@ namespace ColorMelt.Gameplay
         private MaterialPropertyBlock _bodyBlock;
         private Color _bodyColor = Color.gray;
         private Color _accentColor = Color.white;
-        private Color _currentColor = Color.white;
-        private Color _targetColor = Color.white;
+        private Color _color = Color.white;
+        private Color _prevColor = Color.white;
+        private float _mixTime = Never;
+        private float _flowTime = Never;
+        private float _sloshTime = Never;
+        private float _mixSpeed = 16f;
+        private float _channelLength = 23.4f;
         private float _currentFill;
         private float _targetFill;
         private float _fillLimit = 1f;
@@ -74,6 +87,13 @@ namespace ColorMelt.Gameplay
                 bodyRenderer.sharedMaterial.HasProperty(BaseColorId))
                 _bodyColor = bodyRenderer.sharedMaterial.GetColor(BaseColorId);
 
+            var liquid = liquidRenderer != null ? liquidRenderer.sharedMaterial : null;
+            if (liquid != null && liquid.HasProperty(MixSpeedId))
+            {
+                _mixSpeed = liquid.GetFloat(MixSpeedId);
+                _channelLength = liquid.GetFloat(ChannelLengthId);
+            }
+
             ApplyLiquid();
             ApplyBody(0f);
         }
@@ -92,17 +112,29 @@ namespace ColorMelt.Gameplay
                 return;
             }
 
-            _targetColor = color.ToUnityColor();
-            if (!_hasPaint)
+            var newColor = color.ToUnityColor();
+            if (!_hasPaint && _currentFill <= 0.01f)
             {
                 // Fresh paint flows in from the inlet in its own colour.
-                _currentColor = _targetColor;
-                if (_currentFill <= 0.01f)
-                    _currentFill = 0f;
+                _currentFill = 0f;
+                _color = _prevColor = newColor;
+                _mixTime = Never;
+            }
+            else if (newColor != _color)
+            {
+                // The new colour runs in from the inlet and marbles over the
+                // paint already in the channel.
+                _prevColor = VisibleColor();
+                _color = newColor;
+                _mixTime = Time.time;
+                // Stir the paint until the new colour has run through.
+                _flowTime = Mathf.Max(_flowTime,
+                    Time.time + _currentFill * _channelLength / Mathf.Max(_mixSpeed, 0.01f));
             }
 
             _hasPaint = true;
             _targetFill = _fillLimit;
+            ApplyLiquid();
         }
 
         /// <summary>Caps the liquid at a block (0..1 along the channel).</summary>
@@ -117,11 +149,22 @@ namespace ColorMelt.Gameplay
         public void SnapToTarget()
         {
             _currentFill = _targetFill;
-            _currentColor = _targetColor;
+            _prevColor = _color;
+            _mixTime = Never;
             ApplyLiquid();
         }
 
-        public void SetHighlight(ChannelHighlight highlight) => _highlight = highlight;
+        public void SetHighlight(ChannelHighlight highlight)
+        {
+            if (highlight == ChannelHighlight.Selected && _highlight != ChannelHighlight.Selected)
+            {
+                // Lifting the channel rocks the paint.
+                _sloshTime = Time.time;
+                ApplyLiquid();
+            }
+
+            _highlight = highlight;
+        }
 
         /// <summary>World point on the liquid surface, t = 0 inlet .. 1 outlet.</summary>
         public Vector3 GetPoint(float t)
@@ -138,12 +181,11 @@ namespace ColorMelt.Gameplay
         private void Update()
         {
             // Settled liquid and an unlit body keep their property blocks;
-            // the flow itself is animated by the shader.
-            if (_currentFill != _targetFill || _currentColor != _targetColor)
+            // the flow, foam and mixing are animated by the shader.
+            if (_currentFill != _targetFill)
             {
                 _currentFill = Mathf.MoveTowards(_currentFill, _targetFill, fillSpeed * Time.deltaTime);
-                _currentColor = Color.Lerp(_currentColor, _targetColor, 1f - Mathf.Exp(-colorBlendSpeed * Time.deltaTime));
-                if (_currentColor == _targetColor) _currentColor = _targetColor;
+                _flowTime = Mathf.Max(_flowTime, Time.time);
                 ApplyLiquid();
             }
 
@@ -178,8 +220,23 @@ namespace ColorMelt.Gameplay
             _liquidBlock ??= new MaterialPropertyBlock();
             liquidRenderer.GetPropertyBlock(_liquidBlock);
             _liquidBlock.SetFloat(FillAmountId, _currentFill);
-            _liquidBlock.SetColor(FillColorId, _currentColor);
+            _liquidBlock.SetColor(FillColorId, _color);
+            _liquidBlock.SetColor(PrevColorId, _prevColor);
+            _liquidBlock.SetFloat(FlowTimeId, _flowTime);
+            _liquidBlock.SetFloat(MixTimeId, _mixTime);
+            _liquidBlock.SetFloat(SloshTimeId, _sloshTime);
             liquidRenderer.SetPropertyBlock(_liquidBlock);
+        }
+
+        /// <summary>
+        /// Rough colour of the channel while a new colour is still running in,
+        /// used as the old colour when another change interrupts it.
+        /// </summary>
+        private Color VisibleColor()
+        {
+            var length = Mathf.Max(_currentFill * _channelLength, 0.01f);
+            var covered = Mathf.Clamp01((Time.time - _mixTime) * _mixSpeed / length);
+            return Color.Lerp(_prevColor, _color, covered);
         }
 
         private void ApplyBody(float amount)

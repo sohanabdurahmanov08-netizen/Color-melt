@@ -32,12 +32,8 @@ namespace ColorMelt.Gameplay
         [SerializeField] private float sourceHeight = 1.1f;
         [SerializeField] private Vector3 sourceScale = new Vector3(1.3f, 0.45f, 1.3f);
 
-        public float RouteSpacing => routeSpacing;
-
         /// <summary>World size of one local unit.</summary>
         public float Unit => transform.lossyScale.x;
-
-        public Vector3 BoardCenterWorld => transform.TransformPoint(routeOrigin);
 
         public List<RouteView> Build(LevelData level)
         {

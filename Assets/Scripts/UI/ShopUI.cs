@@ -60,6 +60,7 @@ namespace ColorMelt.UI
             }
 
             Progress.AddHints(config.hintPackSize);
+            Achievements.Add(AchievementStat.HintPacksBought);
             Toast.Show(Localization.Plural("count.hints_added", config.hintPackSize));
         }
 

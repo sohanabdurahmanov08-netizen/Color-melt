@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33d04379a26b39458e8948b8b04212d, type: 3}
+  m_Name: AchievementDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Meta.AchievementDatabase
+  achievements:
+  - id: first_win
+    stat: 0
+    target: 1
+    allLevels: 0
+    reward: 20
+    icon: {fileID: 21300000, guid: c26799541d769ca48b03f5f77fe97d84, type: 3}
+    tile: {fileID: 21300000, guid: 7481f6efcaffc814ebb9d2332a67f7dd, type: 3}
+  - id: levels_5
+    stat: 0
+    target: 5
+    allLevels: 0
+    reward: 50
+    icon: {fileID: 21300000, guid: 9563750d82f11a44f884fd15b392ba35, type: 3}
+    tile: {fileID: 21300000, guid: 5fa7b63579f642347ac3b0d0200804b3, type: 3}
+  - id: levels_all
+    stat: 0
+    target: 1
+    allLevels: 1
+    reward: 150
+    icon: {fileID: 21300000, guid: adb43f03e565a5843a14550909329391, type: 3}
+    tile: {fileID: 21300000, guid: 36066b0939916934f82c0ff5bacd98c7, type: 3}
+  - id: stars_10
+    stat: 1
+    target: 10
+    allLevels: 0
+    reward: 40
+    icon: {fileID: 21300000, guid: 222c9299f9935da4caa16a03646e82c8, type: 3}
+    tile: {fileID: 21300000, guid: 0fb643b2993ccfa45924bd77f41cdcca, type: 3}
+  - id: stars_all
+    stat: 1
+    target: 1
+    allLevels: 1
+    reward: 200
+    icon: {fileID: 21300000, guid: 222c9299f9935da4caa16a03646e82c8, type: 3}
+    tile: {fileID: 21300000, guid: 36066b0939916934f82c0ff5bacd98c7, type: 3}
+  - id: perfect_1
+    stat: 2
+    target: 1
+    allLevels: 0
+    reward: 25
+    icon: {fileID: 21300000, guid: 1f673ce49deb574458120743f1208146, type: 3}
+    tile: {fileID: 21300000, guid: de4bf772a9de19d42b344000cc7e3390, type: 3}
+  - id: perfect_5
+    stat: 2
+    target: 5
+    allLevels: 0
+    reward: 75
+    icon: {fileID: 21300000, guid: 1f673ce49deb574458120743f1208146, type: 3}
+    tile: {fileID: 21300000, guid: de4bf772a9de19d42b344000cc7e3390, type: 3}
+  - id: blocks_10
+    stat: 3
+    target: 10
+    allLevels: 0
+    reward: 25
+    icon: {fileID: 21300000, guid: 73454a30845b5414db83cbce98d0afc7, type: 3}
+    tile: {fileID: 21300000, guid: 1a7a39c1b4920a741977471cc9fbe928, type: 3}
+  - id: blocks_50
+    stat: 3
+    target: 50
+    allLevels: 0
+    reward: 60
+    icon: {fileID: 21300000, guid: 73454a30845b5414db83cbce98d0afc7, type: 3}
+    tile: {fileID: 21300000, guid: 1a7a39c1b4920a741977471cc9fbe928, type: 3}
+  - id: blocks_150
+    stat: 3
+    target: 150
+    allLevels: 0
+    reward: 120
+    icon: {fileID: 21300000, guid: 73454a30845b5414db83cbce98d0afc7, type: 3}
+    tile: {fileID: 21300000, guid: 1a7a39c1b4920a741977471cc9fbe928, type: 3}
+  - id: pours_50
+    stat: 4
+    target: 50
+    allLevels: 0
+    reward: 30
+    icon: {fileID: 21300000, guid: c584c73eab5eb6441bfb9f31441f27d0, type: 3}
+    tile: {fileID: 21300000, guid: 5fa7b63579f642347ac3b0d0200804b3, type: 3}
+  - id: pours_200
+    stat: 4
+    target: 200
+    allLevels: 0
+    reward: 80
+    icon: {fileID: 21300000, guid: c584c73eab5eb6441bfb9f31441f27d0, type: 3}
+    tile: {fileID: 21300000, guid: 5fa7b63579f642347ac3b0d0200804b3, type: 3}
+  - id: chain_2
+    stat: 5
+    target: 2
+    allLevels: 0
+    reward: 50
+    icon: {fileID: 21300000, guid: 55bec506f1aacc649a6c1ac5bb9cedd8, type: 3}
+    tile: {fileID: 21300000, guid: 0fb643b2993ccfa45924bd77f41cdcca, type: 3}
+  - id: spare_2
+    stat: 6
+    target: 2
+    allLevels: 0
+    reward: 40
+    icon: {fileID: 21300000, guid: 206e2c2c965e2b741866c5705ef9cc52, type: 3}
+    tile: {fileID: 21300000, guid: 7481f6efcaffc814ebb9d2332a67f7dd, type: 3}
+  - id: hint_first
+    stat: 7
+    target: 1
+    allLevels: 0
+    reward: 15
+    icon: {fileID: 21300000, guid: d783383e351a48042acd915973c19b3e, type: 3}
+    tile: {fileID: 21300000, guid: 0fb643b2993ccfa45924bd77f41cdcca, type: 3}
+  - id: shopper
+    stat: 8
+    target: 1
+    allLevels: 0
+    reward: 30
+    icon: {fileID: 21300000, guid: 4f0de676fcd34494db9cbf23bc247a29, type: 3}
+    tile: {fileID: 21300000, guid: 5fa7b63579f642347ac3b0d0200804b3, type: 3}
+  - id: second_chance
+    stat: 9
+    target: 1
+    allLevels: 0
+    reward: 20
+    icon: {fileID: 21300000, guid: aacc01add1b37f44597c77b223315292, type: 3}
+    tile: {fileID: 21300000, guid: 7481f6efcaffc814ebb9d2332a67f7dd, type: 3}
+  - id: coins_1000
+    stat: 10
+    target: 1000
+    allLevels: 0
+    reward: 100
+    icon: {fileID: 21300000, guid: 86531a9d7149d67489af4c3b8f42133e, type: 3}
+    tile: {fileID: 21300000, guid: 36066b0939916934f82c0ff5bacd98c7, type: 3}

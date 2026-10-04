@@ -62,6 +62,8 @@ namespace ColorMelt.Gameplay
         {
             if (level.Routes.Count == 0 || !TryGetPress(out var screenPosition)) return;
             if (IsOverButton(screenPosition)) return;
+            // The camera pad only moves the camera; it never picks a channel.
+            if (level.Pan != null && level.Pan.Contains(screenPosition)) return;
 
             HandleTap(FindRouteAt(screenPosition));
         }

@@ -120,6 +120,8 @@ namespace ColorMelt.Gameplay
             overlay.ShowMessage(Localization.Get("tutorial.intro"));
             yield return new WaitForSeconds(1.6f);
 
+            yield return TeachCameraPad();
+
             foreach (var move in solution)
             {
                 var from = level.Routes[move.from];
@@ -168,6 +170,25 @@ namespace ColorMelt.Gameplay
             input.TapFilter = null;
             overlay.Hide();
             IsRunning = false;
+        }
+
+        /// <summary>Highlights the camera pad and waits until the player has dragged on it.</summary>
+        private IEnumerator TeachCameraPad()
+        {
+            var pad = level.Pan;
+            if (pad == null || !pad.isActiveAndEnabled) yield break;
+
+            input.TapFilter = route => false;
+            pad.SetHighlighted(true);
+            overlay.ShowMessage(Localization.Get("tutorial.camera"));
+            overlay.SwipeAcross(pad.ScreenRect);
+
+            var start = pad.DragDistance;
+            yield return new WaitUntil(() => pad.DragDistance - start > Screen.height * 0.12f);
+            yield return new WaitForSeconds(0.6f);
+
+            overlay.HidePointer();
+            pad.SetHighlighted(false);
         }
     }
 }

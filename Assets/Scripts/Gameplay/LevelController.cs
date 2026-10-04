@@ -40,8 +40,10 @@ namespace ColorMelt.Gameplay
         [SerializeField, Min(0f)] private float meltTime = 0.4f;
 
         [Header("Camera")]
-        [Tooltip("Route count the camera pose in the scene was framed for.")]
-        [SerializeField, Min(1)] private int framedRouteCount = 3;
+        [Tooltip("Screen share kept free around the board for the HUD (viewport fractions).")]
+        [SerializeField, Range(0f, 0.4f)] private float framePaddingTop = 0.16f;
+        [SerializeField, Range(0f, 0.4f)] private float framePaddingBottom = 0.12f;
+        [SerializeField, Range(0f, 0.4f)] private float framePaddingSides = 0.05f;
 
         private readonly List<RouteView> _routes = new List<RouteView>();
         private ColorType[] _lastReached;
@@ -62,6 +64,13 @@ namespace ColorMelt.Gameplay
         public FlowModel Model { get; private set; }
         public IReadOnlyList<RouteView> Routes => _routes;
         public Camera Camera => gameCamera;
+        public CameraPan Pan { get; private set; }
+
+        /// <summary>True once the camera has been framed for the level.</summary>
+        public bool IsFramed { get; private set; }
+        /// <summary>Camera position that shows the whole board.</summary>
+        public Vector3 FramedPosition { get; private set; }
+        public Bounds BoardBounds { get; private set; }
         public int MovesLeft { get; private set; }
         public int MovesUsed { get; private set; }
 
@@ -74,6 +83,9 @@ namespace ColorMelt.Gameplay
                 gameCamera = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
             if (gameCamera != null)
                 _cameraRestPosition = gameCamera.transform.position;
+
+            Pan = GetComponent<CameraPan>();
+            if (Pan == null) Pan = gameObject.AddComponent<CameraPan>();
         }
 
         private void Start()
@@ -123,7 +135,7 @@ namespace ColorMelt.Gameplay
 
             // A block matching its own channel at the start melts right away.
             if (Model.FindMeltable().Count > 0)
-                StartCoroutine(Resolve());
+                StartCoroutine(Resolve(fromPour: false));
         }
 
         public bool CanPour(int from, int to) =>
@@ -140,11 +152,12 @@ namespace ColorMelt.Gameplay
 
             MovesChanged?.Invoke(MovesLeft);
             Poured?.Invoke(new Move(from, to));
+            Achievements.Add(AchievementStat.Pours);
 
             // Input stays free for set-up pours; it only locks while blocks
             // melt or when the last move has been spent.
             if (Model.FindMeltable().Count > 0 || MovesLeft <= 0)
-                StartCoroutine(Resolve());
+                StartCoroutine(Resolve(fromPour: true));
             else
                 StartCoroutine(NudgeAfterFlow());
             return true;
@@ -169,10 +182,13 @@ namespace ColorMelt.Gameplay
             Continued?.Invoke();
         }
 
-        private IEnumerator Resolve()
+        private IEnumerator Resolve(bool fromPour)
         {
             _resolving = true;
             yield return new WaitForSeconds(flowDelay);
+
+            // Blocks melted by this pour, including the cascade after it.
+            var chain = 0;
 
             while (true)
             {
@@ -191,6 +207,8 @@ namespace ColorMelt.Gameplay
                     Haptics.Impact();
                     BlockMelted?.Invoke(route, view);
                 }
+                chain += meltable.Count;
+                Achievements.Add(AchievementStat.BlocksMelted, meltable.Count);
 
                 yield return new WaitForSeconds(meltTime);
 
@@ -201,6 +219,8 @@ namespace ColorMelt.Gameplay
             }
 
             _resolving = false;
+            if (fromPour && chain > 0)
+                Achievements.ReportBest(AchievementStat.BestChain, chain);
 
             if (Model.AllMelted)
                 Win();
@@ -222,6 +242,8 @@ namespace ColorMelt.Gameplay
             var reward = config.coinsPerWin + config.coinsPerStar * stars;
             Progress.AddCoins(reward);
             Progress.CompleteLevel(LevelIndex, stars);
+            // Also re-checks the level and star achievements.
+            Achievements.ReportBest(AchievementStat.MovesLeftAtWin, MovesLeft);
             Won?.Invoke(new LevelResult(stars, MovesUsed, reward));
         }
 
@@ -261,18 +283,93 @@ namespace ColorMelt.Gameplay
             }
         }
 
-        /// <summary>Pulls the camera back so wider boards still fit the screen.</summary>
+        /// <summary>
+        /// Moves the camera (keeping its rotation) so the whole board is centred
+        /// in the screen area left free by the HUD, pulling back as far as wide
+        /// boards need. The board is never shown larger than in the scene's
+        /// camera pose.
+        /// </summary>
         private void FrameCamera()
         {
-            if (gameCamera == null || builder == null) return;
+            if (gameCamera == null || gameCamera.orthographic) return;
 
-            var spacing = builder.RouteSpacing;
-            var framedWidth = (framedRouteCount - 1) * spacing + spacing;
-            var width = (_routes.Count - 1) * spacing + spacing;
-            var factor = Mathf.Max(1f, width / framedWidth);
+            var hasBounds = false;
+            var board = default(Bounds);
+            foreach (var route in _routes)
+            {
+                if (!route.TryGetWorldBounds(out var bounds)) continue;
+                if (hasBounds) board.Encapsulate(bounds);
+                else board = bounds;
+                hasBounds = true;
+            }
+            if (!hasBounds) return;
 
-            var center = builder.BoardCenterWorld;
-            gameCamera.transform.position = center + (_cameraRestPosition - center) * factor;
+            // Work in the camera's axes: x right, y up, z forward.
+            var rotation = gameCamera.transform.rotation;
+            var toCamera = Quaternion.Inverse(rotation);
+            var corners = new Vector3[8];
+            for (var i = 0; i < 8; i++)
+                corners[i] = toCamera * new Vector3(
+                    (i & 1) == 0 ? board.min.x : board.max.x,
+                    (i & 2) == 0 ? board.min.y : board.max.y,
+                    (i & 4) == 0 ? board.min.z : board.max.z);
+
+            var tanY = Mathf.Tan(gameCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            var tanX = tanY * gameCamera.aspect;
+
+            // Free screen area in normalized device coordinates (-1..1).
+            var left = framePaddingSides * 2f - 1f;
+            var right = 1f - framePaddingSides * 2f;
+            var bottomPadding = Mathf.Max(framePaddingBottom, Pan != null ? Pan.ReservedBottom : 0f);
+            var bottom = bottomPadding * 2f - 1f;
+            var top = 1f - framePaddingTop * 2f;
+
+            // A point p is on screen inside [lo, hi] when
+            // lo * tan * (p.z - cam.z) <= p.axis - cam.axis <= hi * tan * (p.z - cam.z).
+            // These are linear in the camera position, so the closest pose that
+            // fits every corner can be solved per axis.
+            float RequiredBack(Func<Vector3, float> axis, float tan, float lo, float hi)
+            {
+                var maxHi = float.MinValue;
+                var minLo = float.MaxValue;
+                foreach (var p in corners)
+                {
+                    maxHi = Mathf.Max(maxHi, axis(p) - hi * tan * p.z);
+                    minLo = Mathf.Min(minLo, axis(p) - lo * tan * p.z);
+                }
+                return (maxHi - minLo) / ((hi - lo) * tan);
+            }
+
+            float Centered(Func<Vector3, float> axis, float tan, float lo, float hi, float back)
+            {
+                var maxHi = float.MinValue;
+                var minLo = float.MaxValue;
+                foreach (var p in corners)
+                {
+                    maxHi = Mathf.Max(maxHi, axis(p) - hi * tan * (p.z + back));
+                    minLo = Mathf.Min(minLo, axis(p) - lo * tan * (p.z + back));
+                }
+                return (maxHi + minLo) * 0.5f;
+            }
+
+            // "back" is minus the camera's z in camera axes.
+            var back = Mathf.Max(
+                RequiredBack(p => p.x, tanX, left, right),
+                RequiredBack(p => p.y, tanY, bottom, top));
+
+            // Never closer to the board than the pose set up in the scene.
+            var centerZ = (toCamera * board.center).z;
+            var restDepth = centerZ - (toCamera * _cameraRestPosition).z;
+            back = Mathf.Max(back, restDepth - centerZ);
+
+            var position = new Vector3(
+                Centered(p => p.x, tanX, left, right, back),
+                Centered(p => p.y, tanY, bottom, top, back),
+                -back);
+            FramedPosition = rotation * position;
+            BoardBounds = board;
+            IsFramed = true;
+            gameCamera.transform.position = FramedPosition;
         }
     }
 }

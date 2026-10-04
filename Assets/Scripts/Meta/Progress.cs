@@ -38,6 +38,7 @@ namespace ColorMelt.Meta
             PlayerPrefs.SetInt(CoinsKey, Mathf.Max(0, Coins + amount));
             PlayerPrefs.Save();
             CoinsChanged?.Invoke(Coins);
+            if (amount > 0) Achievements.Add(AchievementStat.CoinsEarned, amount);
         }
 
         public static bool TrySpendCoins(int amount)

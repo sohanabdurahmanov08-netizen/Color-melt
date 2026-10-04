@@ -96,6 +96,7 @@ namespace ColorMelt.UI
         {
             window.Close();
             level.Continue(moves);
+            Achievements.Add(AchievementStat.Continues);
         }
     }
 }

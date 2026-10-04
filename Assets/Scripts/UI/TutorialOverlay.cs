@@ -20,6 +20,8 @@ namespace ColorMelt.UI
         private Camera _camera;
         private Vector3 _worldPoint;
         private bool _pointing;
+        private bool _swiping;
+        private Rect _swipeRect;
         private float _bannerPop;
 
         private void Awake()
@@ -42,12 +44,23 @@ namespace ColorMelt.UI
             _worldPoint = worldPoint;
             _camera = cam;
             _pointing = true;
+            _swiping = false;
+            if (pointer != null) pointer.gameObject.SetActive(true);
+        }
+
+        /// <summary>Slides the pointer back and forth across a screen rect, as a swipe gesture.</summary>
+        public void SwipeAcross(Rect screenRect)
+        {
+            _swipeRect = screenRect;
+            _swiping = true;
+            _pointing = false;
             if (pointer != null) pointer.gameObject.SetActive(true);
         }
 
         public void HidePointer()
         {
             _pointing = false;
+            _swiping = false;
             if (pointer != null) pointer.gameObject.SetActive(false);
         }
 
@@ -73,6 +86,18 @@ namespace ColorMelt.UI
                 banner.alpha = Mathf.MoveTowards(banner.alpha, 1f, Time.unscaledDeltaTime * 5f);
                 _bannerPop = Mathf.MoveTowards(_bannerPop, 0f, Time.unscaledDeltaTime * 4f);
                 banner.transform.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(_bannerPop * Mathf.PI));
+            }
+
+            if (_swiping && pointer != null)
+            {
+                // Ease from the left quarter to the right quarter and back.
+                var t = Mathf.SmoothStep(0f, 1f, Mathf.PingPong(Time.unscaledTime * 0.8f, 1f));
+                var swipe = new Vector2(Mathf.Lerp(_swipeRect.xMin + _swipeRect.width * 0.25f,
+                    _swipeRect.xMax - _swipeRect.width * 0.25f, t), _swipeRect.center.y);
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_area, swipe, null, out var swipeLocal))
+                    pointer.anchoredPosition = swipeLocal;
+                pointer.localScale = Vector3.one;
+                return;
             }
 
             if (!_pointing || pointer == null || _camera == null) return;

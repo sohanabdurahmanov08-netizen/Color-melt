@@ -151,6 +151,7 @@ namespace ColorMelt.UI
             }
 
             input.ShowHint(hint.Value);
+            Achievements.Add(AchievementStat.HintsUsed);
         }
 
         private IEnumerator PraiseRoutine()
