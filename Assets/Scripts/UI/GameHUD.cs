@@ -9,8 +9,10 @@ using UnityEngine.UI;
 namespace ColorMelt.UI
 {
     /// <summary>
-    /// In-game HUD: level number, moves with a punch on every pour, the hint
-    /// booster, restart, the pause window and praise pop-ups on melts.
+    /// In-game HUD: level number, moves with a punch on every pour, restart,
+    /// the pause window, and praise pop-ups on melts that turn into a
+    /// growing "COMBO xN!" when one pour melts several blocks. Boosters live
+    /// in BoosterBar.
     /// </summary>
     public class GameHUD : MonoBehaviour
     {
@@ -28,8 +30,6 @@ namespace ColorMelt.UI
         [Header("Buttons")]
         [SerializeField] private Button pauseButton;
         [SerializeField] private Button restartButton;
-        [SerializeField] private Button hintButton;
-        [SerializeField] private TMP_Text hintLabel;
 
         [Header("Pause window")]
         [SerializeField] private UIWindow pauseWindow;
@@ -39,8 +39,10 @@ namespace ColorMelt.UI
 
         [Header("Praise")]
         [SerializeField] private TMP_Text praiseText;
+        [SerializeField] private Color comboColor = new Color(1f, 0.85f, 0.2f);
 
         private Color _movesColor = Color.white;
+        private Color _praiseColor = Color.white;
         private Coroutine _movesPunch;
         private Coroutine _praise;
         private Vector2 _praisePosition;
@@ -51,6 +53,7 @@ namespace ColorMelt.UI
             if (praiseText != null)
             {
                 _praisePosition = praiseText.rectTransform.anchoredPosition;
+                _praiseColor = praiseText.color;
                 praiseText.gameObject.SetActive(false);
             }
 
@@ -59,7 +62,6 @@ namespace ColorMelt.UI
             restartButton?.onClick.AddListener(GameSession.Restart);
             pauseRestartButton?.onClick.AddListener(GameSession.Restart);
             pauseMenuButton?.onClick.AddListener(GameSession.ToMenu);
-            hintButton?.onClick.AddListener(UseHint);
         }
 
         private void OnEnable()
@@ -68,8 +70,6 @@ namespace ColorMelt.UI
             level.MovesChanged += OnMovesChanged;
             level.BlockMelted += OnBlockMelted;
             level.Poured += OnPoured;
-            Progress.HintsChanged += OnHintsChanged;
-            Progress.CoinsChanged += OnHintsChanged;
             Localization.Changed += RefreshLabels;
         }
 
@@ -79,17 +79,10 @@ namespace ColorMelt.UI
             level.MovesChanged -= OnMovesChanged;
             level.BlockMelted -= OnBlockMelted;
             level.Poured -= OnPoured;
-            Progress.HintsChanged -= OnHintsChanged;
-            Progress.CoinsChanged -= OnHintsChanged;
             Localization.Changed -= RefreshLabels;
         }
 
-        private void OnStarted()
-        {
-            // The tutorial level teaches the moves itself.
-            if (hintButton != null) hintButton.gameObject.SetActive(!level.Level.tutorial);
-            RefreshLabels();
-        }
+        private void OnStarted() => RefreshLabels();
 
         /// <summary>Rewrites the HUD text, e.g. after the language changes.</summary>
         private void RefreshLabels()
@@ -97,7 +90,6 @@ namespace ColorMelt.UI
             if (level.Level == null) return;
             if (levelText != null) levelText.text = Localization.Format("hud.level", level.LevelIndex + 1);
             if (movesText != null) movesText.text = Localization.Format("hud.moves", level.MovesLeft);
-            RefreshHint();
         }
 
         private void OnMovesChanged(int moves)
@@ -111,59 +103,37 @@ namespace ColorMelt.UI
 
         private void OnPoured(Move move) => AudioManager.PlayPour();
 
-        private void OnBlockMelted(RouteView route, BlockView block)
+        private void OnBlockMelted(RouteView route, BlockView block, int chain)
         {
             if (praiseText == null) return;
-            var praise = Localization.Get("praise." + Random.Range(1, PraiseCount + 1));
-            praiseText.text = $"{praise}\n<size=70%>+{GameConfig.Instance.coinsPerBlock}</size>";
+            var coins = $"<size=70%>+{GameConfig.Instance.coinsPerBlock}</size>";
+            if (chain >= 2)
+            {
+                praiseText.text = $"{Localization.Format("combo", chain)}\n{coins}";
+                praiseText.color = comboColor;
+            }
+            else
+            {
+                praiseText.text = $"{Localization.Get("praise." + Random.Range(1, PraiseCount + 1))}\n{coins}";
+                praiseText.color = _praiseColor;
+            }
             if (_praise != null) StopCoroutine(_praise);
-            _praise = StartCoroutine(PraiseRoutine());
+            _praise = StartCoroutine(PraiseRoutine(chain));
         }
 
-        private void OnHintsChanged(int _) => RefreshHint();
-
-        private void RefreshHint()
-        {
-            if (hintLabel == null) return;
-            var price = Progress.Hints > 0
-                ? "x" + Progress.Hints
-                : Localization.Plural("count.coins", GameConfig.Instance.hintCost);
-            hintLabel.text = $"{Localization.Get("hud.hint")}\n<size=70%>{price}</size>";
-        }
-
-        private void UseHint()
-        {
-            if (TutorialController.IsRunning || level.IsBusy) return;
-
-            var hint = level.FindHint();
-            if (!hint.HasValue)
-            {
-                Toast.Show(Localization.Get(level.MovesLeft > 0 ? "toast.no_solution" : "toast.no_moves"));
-                return;
-            }
-
-            if (Progress.Hints > 0)
-                Progress.AddHints(-1);
-            else if (!Progress.TrySpendCoins(GameConfig.Instance.hintCost))
-            {
-                Toast.Show(Localization.Get("toast.not_enough_coins"));
-                return;
-            }
-
-            input.ShowHint(hint.Value);
-            Achievements.Add(AchievementStat.HintsUsed);
-        }
-
-        private IEnumerator PraiseRoutine()
+        private IEnumerator PraiseRoutine(int chain)
         {
             praiseText.gameObject.SetActive(true);
             var rect = praiseText.rectTransform;
             var start = _praisePosition;
+            // Every step of a combo pops a little bigger.
+            var size = 1f + 0.15f * Mathf.Min(chain - 1, 4);
             const float duration = 0.9f;
-            for (var time = 0f; time < duration; time += Time.deltaTime)
+            // Unscaled, so the combo's slow motion does not stretch the pop.
+            for (var time = 0f; time < duration; time += Time.unscaledDeltaTime)
             {
                 var t = time / duration;
-                rect.localScale = Vector3.one * (t < 0.2f ? Mathf.Lerp(0.3f, 1.15f, t / 0.2f) : Mathf.Lerp(1.15f, 1f, (t - 0.2f) / 0.8f));
+                rect.localScale = Vector3.one * size * (t < 0.2f ? Mathf.Lerp(0.3f, 1.15f, t / 0.2f) : Mathf.Lerp(1.15f, 1f, (t - 0.2f) / 0.8f));
                 rect.anchoredPosition = start + Vector2.up * (60f * t);
                 praiseText.alpha = t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f;
                 yield return null;

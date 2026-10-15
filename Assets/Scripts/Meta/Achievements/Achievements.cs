@@ -63,7 +63,7 @@ namespace ColorMelt.Meta
             }
             if (fresh == null) return;
 
-            PlayerPrefs.Save();
+            PrefsSaver.Request();
             Unlocked?.Invoke(fresh);
             Changed?.Invoke();
         }
@@ -112,7 +112,7 @@ namespace ColorMelt.Meta
 
             PlayerPrefs.SetInt(StateKeyPrefix + achievement.id, (int)AchievementState.Claimed);
             Progress.AddCoins(achievement.reward);
-            PlayerPrefs.Save();
+            PrefsSaver.Request();
             Changed?.Invoke();
             return true;
         }

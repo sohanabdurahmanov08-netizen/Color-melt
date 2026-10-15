@@ -26,6 +26,8 @@ namespace ColorMelt.UI
         private CanvasGroup _group;
         private Coroutine _animation;
         private Vector3 _contentScale = Vector3.one;
+        private Vector2 _contentPosition;
+        private Vector2? _openFrom;
 
         public bool IsOpen { get; private set; }
 
@@ -37,8 +39,27 @@ namespace ColorMelt.UI
             _group = GetComponent<CanvasGroup>();
             if (content == null) content = transform as RectTransform;
             _contentScale = content.localScale;
+            _contentPosition = content.anchoredPosition;
             SetState(startOpen ? 1f : 0f, startOpen);
             IsOpen = startOpen;
+        }
+
+        /// <summary>
+        /// Opens with the content growing out of a world point (e.g. the win
+        /// jar's mouth) instead of popping in place.
+        /// </summary>
+        public void OpenFrom(Vector3 worldPoint)
+        {
+            if (IsOpen) return;
+            var parent = content.parent as RectTransform;
+            if (parent != null)
+            {
+                var local = (Vector2)parent.InverseTransformPoint(worldPoint);
+                // Offset from where the content's pivot normally sits.
+                var rest = (Vector2)parent.InverseTransformPoint(content.position);
+                _openFrom = local - rest;
+            }
+            Open();
         }
 
         public void Open()
@@ -86,13 +107,26 @@ namespace ColorMelt.UI
             _group.interactable = open;
             _group.blocksRaycasts = open;
 
+            var from = open ? _openFrom : null;
+            _openFrom = null;
             var duration = open ? openTime : closeTime;
+            if (from.HasValue) duration *= 1.8f;
             var startAlpha = _group.alpha;
             for (var time = 0f; time < duration; time += Time.unscaledDeltaTime)
             {
                 var t = time / duration;
-                _group.alpha = Mathf.Lerp(startAlpha, open ? 1f : 0f, t);
-                content.localScale = _contentScale * (open ? EaseOutBack(Mathf.Lerp(0.75f, 1f, t)) : Mathf.Lerp(1f, 0.85f, t));
+                _group.alpha = Mathf.Lerp(startAlpha, open ? 1f : 0f, from.HasValue ? t * 2f : t);
+                if (from.HasValue)
+                {
+                    // Rise out of the origin point, overshooting a little at the top.
+                    var eased = EaseOutBackFull(t);
+                    content.anchoredPosition = _contentPosition + Vector2.LerpUnclamped(from.Value, Vector2.zero, eased);
+                    content.localScale = _contentScale * Mathf.LerpUnclamped(0.15f, 1f, eased);
+                }
+                else
+                {
+                    content.localScale = _contentScale * (open ? EaseOutBack(Mathf.Lerp(0.75f, 1f, t)) : Mathf.Lerp(1f, 0.85f, t));
+                }
                 yield return null;
             }
 
@@ -105,7 +139,18 @@ namespace ColorMelt.UI
             _group.alpha = alpha;
             _group.interactable = open;
             _group.blocksRaycasts = open;
-            if (content != null) content.localScale = _contentScale;
+            if (content != null)
+            {
+                content.localScale = _contentScale;
+                content.anchoredPosition = _contentPosition;
+            }
+        }
+
+        private static float EaseOutBackFull(float t)
+        {
+            const float c1 = 1.4f;
+            const float c3 = c1 + 1f;
+            return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
         }
 
         private static float EaseOutBack(float x)

@@ -37,14 +37,27 @@ namespace ColorMelt.Gameplay
         private readonly List<RaycastResult> _uiHits = new List<RaycastResult>();
         private RectTransform _pad;
         private Image _padImage;
+        private CanvasGroup _padGroup;
         private bool _highlighted;
         private bool _dragging;
         private Vector2 _lastPointer;
         private Vector2 _target;   // x: sideways, y: closer (world units)
         private Vector2 _current;
+        private bool _padVisible = true;
+        private float _padAlpha = 1f;
 
         /// <summary>Total distance dragged on the pad, in screen pixels.</summary>
         public float DragDistance { get; private set; }
+
+        /// <summary>World offset added on top of the framed pose, e.g. the win sequence's camera drop.</summary>
+        public Vector3 ExtraOffset { get; set; }
+
+        /// <summary>Fades the pad in or out; a hidden pad ignores drags.</summary>
+        public void SetPadVisible(bool visible)
+        {
+            _padVisible = visible;
+            if (!visible) _dragging = false;
+        }
 
         /// <summary>Screen height share the board must leave free for the pad.</summary>
         public float ReservedBottom => isActiveAndEnabled ? zone.yMax + boardGap : 0f;
@@ -86,12 +99,12 @@ namespace ColorMelt.Gameplay
 
             _current = Vector2.Lerp(_current, _target, 1f - Mathf.Exp(-smoothing * Time.unscaledDeltaTime));
             var t = cam.transform;
-            t.position = level.FramedPosition + t.right * _current.x + t.forward * _current.y;
+            t.position = level.FramedPosition + t.right * _current.x + t.forward * _current.y + ExtraOffset;
         }
 
         private void HandleInput()
         {
-            if (level == null || !level.IsFramed) return;
+            if (level == null || !level.IsFramed || !_padVisible) return;
 
             var pressed = TryGetPointer(out var pointer, out var pressedThisFrame);
             if (!pressed)
@@ -185,6 +198,10 @@ namespace ColorMelt.Gameplay
         private void AnimatePad()
         {
             if (_pad == null) return;
+
+            _padAlpha = Mathf.MoveTowards(_padAlpha, _padVisible ? 1f : 0f, Time.unscaledDeltaTime * 4f);
+            if (_padGroup == null) _padGroup = _pad.gameObject.AddComponent<CanvasGroup>();
+            if (_padGroup.alpha != _padAlpha) _padGroup.alpha = _padAlpha;
 
             var pulse = _highlighted ? 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f) : 0f;
             var alpha = _dragging ? 0.75f : Mathf.Lerp(PadColor.a, 0.9f, pulse);

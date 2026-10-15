@@ -9,14 +9,17 @@ using UnityEngine.UI;
 namespace ColorMelt.UI
 {
     /// <summary>
-    /// Victory window: stars pop in one by one, the coin reward counts up and
-    /// can be doubled once through a rewarded ad.
+    /// Victory window: after the WinCelebration (paint pouring into the jar)
+    /// the results rise out of the jar, stars pop in one by one, the coin
+    /// reward counts up and can be doubled once through a rewarded ad.
     /// </summary>
     public class WinScreenUI : MonoBehaviour
     {
         [SerializeField] private LevelController level;
         [SerializeField] private UIWindow window;
         [SerializeField, Min(0f)] private float showDelay = 0.6f;
+        [Tooltip("Optional: plays before the window and is where the results rise from.")]
+        [SerializeField] private WinCelebration celebration;
         [SerializeField] private TMP_Text subtitleText;
 
         [Header("Stars")]
@@ -62,7 +65,10 @@ namespace ColorMelt.UI
 
         private IEnumerator ShowRoutine()
         {
-            yield return new WaitForSeconds(showDelay);
+            if (celebration != null)
+                yield return celebration.Play(_result);
+            else
+                yield return new WaitForSeconds(showDelay);
 
             foreach (var star in stars)
             {
@@ -70,10 +76,14 @@ namespace ColorMelt.UI
                 star.transform.localScale = Vector3.one;
             }
             if (rewardText != null) rewardText.text = "+0";
-            if (subtitleText != null) subtitleText.text = Localization.Format("win.subtitle", level.LevelIndex + 1);
+            if (subtitleText != null)
+                subtitleText.text = GameSession.HasNextLevel
+                    ? Localization.Format("win.subtitle", level.LevelIndex + 1)
+                    : Localization.Get("win.all_done");
             if (doubleButton != null) doubleButton.gameObject.SetActive(false);
 
-            window.Open();
+            if (celebration != null) window.OpenFrom(celebration.MouthPoint);
+            else window.Open();
             AudioManager.PlayWin();
             yield return new WaitForSecondsRealtime(0.35f);
 

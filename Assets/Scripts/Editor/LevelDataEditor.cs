@@ -75,9 +75,21 @@ namespace ColorMelt.Editor
             if (level.BlockCount == 0)
                 return ("Add at least one block.", MessageType.Error);
 
-            var blockColors = level.routes.SelectMany(route => route.blocks).Select(block => block.color).Distinct().ToList();
+            var blocks = level.routes.SelectMany(route => route.blocks).ToList();
+            var blockColors = blocks.Select(block => block.color)
+                .Concat(blocks.Where(block => block.IsLayered).Select(block => block.inner)).Distinct().ToList();
             if (blockColors.Contains(ColorType.None) || blockColors.Contains(ColorType.Mud))
-                return ("✖ None and Mud blocks can never melt.", MessageType.Error);
+                return ("✖ None and Mud blocks (or inner layers) can never melt.", MessageType.Error);
+            if (blocks.Any(block => block.IsLayered && block.inner == block.color))
+            {
+                text.AppendLine("⚠ A layered block has the same colour inside and out: both layers melt at once.");
+                warning = true;
+            }
+            var layered = blocks.Count(block => block.IsLayered);
+            if (layered > 0)
+                text.AppendLine($"Layered blocks: {layered}");
+            if (level.difficulty != LevelDifficulty.Normal)
+                text.AppendLine($"Difficulty: {level.difficulty}");
             text.AppendLine("Blocks: " + string.Join(", ", blockColors.Select(color =>
             {
                 var recipe = color.Recipe();

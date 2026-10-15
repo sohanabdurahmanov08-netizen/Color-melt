@@ -19,20 +19,28 @@ namespace ColorMelt.Gameplay
     public class RouteInput : MonoBehaviour
     {
         [SerializeField] private LevelController level;
-        [Tooltip("Extra tap area around each channel, as a fraction of screen height.")]
-        [SerializeField, Range(0f, 0.2f)] private float tapPadding = 0.04f;
+        [Tooltip("Farthest a tap may land from a channel's centre line and still pick it, as a share of " +
+                 "screen width. Between two channels the nearer one always wins.")]
+        [SerializeField, Range(0.02f, 0.3f)] private float tapReach = 0.13f;
 
         private readonly List<RaycastResult> _uiHits = new List<RaycastResult>();
         private RouteView _selected;
         private Move? _hint;
+        private Func<RouteView, bool> _canPick;
+        private Action<RouteView> _onPicked;
 
         /// <summary>Optional gate, e.g. the tutorial allowing only one channel.</summary>
         public Func<RouteView, bool> TapFilter { get; set; }
 
         public event Action<RouteView> Selected;
         public event Action Deselected;
+        /// <summary>Pick mode started (true) or ended (false).</summary>
+        public event Action<bool> PickingChanged;
 
         public RouteView SelectedRoute => _selected;
+
+        /// <summary>True while the next tap picks a channel for a booster.</summary>
+        public bool IsPicking => _onPicked != null;
 
         private void OnEnable()
         {
@@ -55,7 +63,31 @@ namespace ColorMelt.Gameplay
         private void OnLevelEnded()
         {
             ClearHint();
+            CancelPick();
             Select(null);
+        }
+
+        /// <summary>
+        /// The next tap on a channel accepted by canPick calls onPicked
+        /// instead of picking up paint. Tapping elsewhere cancels.
+        /// </summary>
+        public void BeginPick(Func<RouteView, bool> canPick, Action<RouteView> onPicked)
+        {
+            Select(null);
+            _hint = null;
+            _canPick = canPick;
+            _onPicked = onPicked;
+            RefreshHighlights();
+            PickingChanged?.Invoke(true);
+        }
+
+        public void CancelPick()
+        {
+            if (_onPicked == null) return;
+            _onPicked = null;
+            _canPick = null;
+            RefreshHighlights();
+            PickingChanged?.Invoke(false);
         }
 
         private void Update()
@@ -71,6 +103,22 @@ namespace ColorMelt.Gameplay
         public void HandleTap(RouteView tapped)
         {
             if (level.IsBusy) return;
+
+            if (IsPicking)
+            {
+                if (tapped == null)
+                {
+                    CancelPick();
+                }
+                else if (_canPick == null || _canPick(tapped))
+                {
+                    var picked = _onPicked;
+                    CancelPick();
+                    picked(tapped);
+                }
+                return;
+            }
+
             if (tapped != null && TapFilter != null && !TapFilter(tapped)) return;
 
             if (tapped == null)
@@ -82,6 +130,7 @@ namespace ColorMelt.Gameplay
             if (_selected == null)
             {
                 Select(tapped);
+                Meta.Haptics.Light();
                 return;
             }
 
@@ -106,6 +155,9 @@ namespace ColorMelt.Gameplay
             // Not reachable from the current pick: pick the new channel instead.
             Select(tapped);
         }
+
+        /// <summary>Drops the picked-up paint without pouring it.</summary>
+        public void ClearSelection() => Select(null);
 
         public void ShowHint(Move move)
         {
@@ -135,7 +187,12 @@ namespace ColorMelt.Gameplay
             foreach (var route in level.Routes)
             {
                 var highlight = ChannelHighlight.None;
-                if (_selected != null)
+                if (IsPicking)
+                {
+                    if (_canPick == null || _canPick(route))
+                        highlight = ChannelHighlight.Hint;
+                }
+                else if (_selected != null)
                 {
                     if (route == _selected)
                         highlight = ChannelHighlight.Selected;
@@ -159,28 +216,14 @@ namespace ColorMelt.Gameplay
             var cam = level.Camera;
             if (cam == null) return null;
 
-            var padding = tapPadding * Screen.height;
             RouteView best = null;
-            var bestScore = float.MaxValue;
-
+            var bestDistance = tapReach * Screen.width;
             foreach (var route in level.Routes)
             {
-                if (!route.TryGetScreenRect(cam, out var rect)) continue;
-
-                var dx = Mathf.Max(rect.xMin - screenPosition.x, 0f, screenPosition.x - rect.xMax);
-                var dy = Mathf.Max(rect.yMin - screenPosition.y, 0f, screenPosition.y - rect.yMax);
-                var distance = new Vector2(dx, dy).magnitude;
-                if (distance > padding) continue;
-
-                // Channels stand side by side, so overlapping padded rects
-                // are resolved by the distance to each channel's centre line.
-                var centreDistance = rect.width >= rect.height
-                    ? Mathf.Abs(screenPosition.y - rect.center.y)
-                    : Mathf.Abs(screenPosition.x - rect.center.x);
-                var score = distance * 1000f + centreDistance;
-                if (score < bestScore)
+                var distance = route.ScreenDistance(cam, screenPosition);
+                if (distance < bestDistance)
                 {
-                    bestScore = score;
+                    bestDistance = distance;
                     best = route;
                 }
             }

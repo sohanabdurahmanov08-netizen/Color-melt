@@ -10,10 +10,15 @@ namespace ColorMelt.UI
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
+        // One-shots at another pitch need sources of their own.
+        private const int PitchedVoices = 4;
+
         private static AudioManager _instance;
         private AudioLibrary _library;
         private AudioSource _effects;
         private AudioSource _music;
+        private AudioSource[] _pitched;
+        private int _nextPitched;
 
         private static AudioManager Instance
         {
@@ -44,6 +49,13 @@ namespace ColorMelt.UI
             _music = gameObject.AddComponent<AudioSource>();
             _music.playOnAwake = false;
             _music.loop = true;
+
+            _pitched = new AudioSource[PitchedVoices];
+            for (var index = 0; index < PitchedVoices; index++)
+            {
+                _pitched[index] = gameObject.AddComponent<AudioSource>();
+                _pitched[index].playOnAwake = false;
+            }
         }
 
         public static void ApplySettingsNow() => Instance.ApplySettings();
@@ -68,6 +80,27 @@ namespace ColorMelt.UI
 
         /// <summary>Plays any clip as a 2D one-shot (world positions are far from the listener).</summary>
         public static void PlayClip(AudioClip clip, float volume = 1f) => Instance.Play(clip, volume);
+
+        /// <summary>One-shot at another pitch, e.g. melts rising with each step of a combo.</summary>
+        public static void PlayClip(AudioClip clip, float volume, float pitch)
+        {
+            if (Mathf.Approximately(pitch, 1f))
+            {
+                Instance.Play(clip, volume);
+                return;
+            }
+
+            var manager = Instance;
+            if (clip == null) return;
+            var source = manager._pitched[manager._nextPitched];
+            manager._nextPitched = (manager._nextPitched + 1) % manager._pitched.Length;
+            source.pitch = pitch;
+            source.PlayOneShot(clip, volume);
+        }
+
+        /// <summary>The pour sound at a given pitch (paint filling the win jar).</summary>
+        public static void PlayPour(float pitch) =>
+            PlayClip(Instance._library != null ? Instance._library.pour : null, 0.6f, pitch);
 
         private void Play(AudioClip clip, float volume = 1f)
         {

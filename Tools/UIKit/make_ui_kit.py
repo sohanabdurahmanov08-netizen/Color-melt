@@ -141,6 +141,7 @@ ribbon('ribbon_blue', *PALETTE['blue'])
 ribbon('ribbon_purple', *PALETTE['purple'])
 ribbon('ribbon_green', *PALETTE['green'])
 ribbon('ribbon_orange', *PALETTE['orange'])
+ribbon('ribbon_pink', *PALETTE['pink'])
 ribbon('ribbon_slate', '#A3A8CC', '#7E83AD', '#585C86')
 
 
@@ -396,6 +397,125 @@ def coins(cv):
 for nm, fn in [('star', star_glyph), ('flag', flag), ('crown', crown), ('drop', drop), ('brush', brush),
                ('bolt', bolt), ('hourglass', hourglass), ('coins', coins)]:
     icon(nm, fn)
+
+# ------------------------------------------------------- boosters & difficulty
+def undo(cv):
+    # Arrow pointing left whose tail loops round to the right and back.
+    top = cv.segment(46, 46, 76, 46, 9)
+    ring = np.abs(cv.circle(76, 72, 26)) - 9
+    loop = I(ring, 76 - cv.x)
+    bottom = cv.segment(76, 98, 50, 98, 9)
+    head = cv.polygon([(18, 46), (52, 20), (52, 72)]) - 3
+    return U(top, loop, bottom, head)
+
+
+def fire(cv):
+    # A flame leaning right with one side tongue and a small flame cut out inside.
+    base = cv.circle(64, 84, 32)
+    body = cv.polygon([(72, 6), (98, 62), (90, 86), (38, 86), (30, 60)])
+    tongue = cv.polygon([(30, 28), (50, 64), (32, 70)])
+    outer = smin(smin(base, body, 14), tongue, 12)
+    inner = smin(cv.circle(66, 96, 13), cv.polygon([(68, 56), (80, 94), (52, 94)]), 5)
+    return S(outer, inner)
+
+
+def skull(cv):
+    head = U(cv.circle(64, 56, 40), cv.rrect(40, 64, 88, 108, 12))
+    eyes = U(cv.circle(48, 58, 12), cv.circle(80, 58, 12))
+    nose = cv.polygon([(64, 72), (72, 86), (56, 86)]) - 1
+    teeth = U(cv.segment(54, 96, 54, 112, 2.5), cv.segment(64, 96, 64, 112, 2.5), cv.segment(74, 96, 74, 112, 2.5))
+    return S(head, U(eyes, nose, teeth))
+
+
+for nm, fn in [('undo', undo), ('fire', fire), ('skull', skull)]:
+    icon(nm, fn)
+
+
+def rainbow_drop(N=128):
+    """Colourful drop for the rainbow booster: paint bands inside an ink outline."""
+    cv = Canvas(N, N)
+    d = U(cv.circle(64, 80, 34), cv.polygon([(64, 8), (94, 62), (64, 80), (34, 62)]) - 1)
+    cv.fill(d, INK)
+    inner = d + 6
+    bands = ['#FF4870', '#FF8226', '#FFD95A', '#66DD86', '#63A6FF', '#AD88FF']
+    y0, y1 = 14, 112
+    for k, col in enumerate(bands):
+        a = y0 + (y1 - y0) * k / len(bands)
+        b = y0 + (y1 - y0) * (k + 1) / len(bands)
+        band = I(inner, a - cv.y, cv.y - b)
+        cv.fill(band, hexc(col))
+    shine = I(np.abs(cv.circle(64, 82, 20)) - 4.5, cv.x - 58, 84 - cv.y)
+    cv.fill(I(shine, inner), WHITE, 0.75)
+    cv.save(os.path.join(OUT, 'Icons', 'rainbow_drop.png'))
+
+
+rainbow_drop()
+
+
+# ------------------------------------------------------------------ win jar
+JW, JH = 560, 600
+JAR_O = 12
+
+
+def jar_shape(cv):
+    rim = cv.rrect(140, 24, 420, 80, 22)
+    neck = cv.rrect(176, 66, 384, 140, 14)
+    body = cv.rrect(48, 120, 512, 586, 120)
+    return U(rim, neck, body)
+
+
+def jar():
+    """Three layers of the win jar: glass behind the paint, the paint mask and
+    the outline with highlights drawn over the paint."""
+    back = Canvas(JW, JH)
+    d = jar_shape(back)
+    glass = d + JAR_O
+    back.fill(glass, hexc('#EAF2FF'), 0.55)
+    back.fill(I(glass, -(glass + 26)), WHITE, 0.25)
+    back.save(os.path.join(OUT, 'jar_back.png'))
+
+    mask = Canvas(JW, JH)
+    mask.fill(jar_shape(mask) + JAR_O, WHITE)
+    mask.save(os.path.join(OUT, 'jar_mask.png'))
+
+    front = Canvas(JW, JH)
+    d = jar_shape(front)
+    front.fill(I(d, -(d + JAR_O)), INK)
+    # rim lip line and glass shine
+    front.fill(front.segment(160, 80, 400, 80, 4), INK, 0.8)
+    front.fill(front.segment(108, 250, 108, 470, 14), WHITE, 0.55)
+    front.fill(front.circle(108, 515, 9), WHITE, 0.55)
+    front.fill(front.segment(160, 40, 236, 40, 6), WHITE, 0.6)
+    front.save(os.path.join(OUT, 'jar_front.png'))
+
+
+jar()
+
+
+def paint_layer(W=256, H=96, wave=22):
+    """White paint layer with a wavy top edge; 9-sliced so only the solid part stretches."""
+    cv = Canvas(W, H)
+    top = wave * 0.5 + wave * 0.5 * np.sin(cv.x / W * 4 * np.pi)
+    cv.fill(top - cv.y, WHITE)
+    cv.save(os.path.join(OUT, 'paint_layer.png'))
+    borders['paint_layer'] = (0, 8, 0, wave + 6)
+
+
+paint_layer()
+
+
+def stream(W=64, H=128):
+    """Paint stream into the jar: a capsule without outline, shaded like a round thread once tinted."""
+    cv = Canvas(W, H)
+    d = cv.rrect(0, 0, W, H, W / 2)
+    across = np.clip(np.abs(cv.x - W / 2) / (W / 2), 0, 1)
+    shade = 1.0 - 0.22 * across ** 2
+    cv.fill(d, np.stack([shade, shade, shade], -1))
+    cv.save(os.path.join(OUT, 'stream.png'))
+    borders['stream'] = (0, W / 2, 0, W / 2)
+
+
+stream()
 
 print('9-slice borders (left, bottom, right, top):')
 for k, v in borders.items():

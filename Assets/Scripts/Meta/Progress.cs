@@ -17,9 +17,12 @@ namespace ColorMelt.Meta
         private const string MusicKey = "cm.music";
         private const string VibrationKey = "cm.vibration";
         private const string InitializedKey = "cm.initialized";
+        private const string BoosterKeyPrefix = "cm.booster.";
+        private const string BoosterSeenKeyPrefix = "cm.booster_seen.";
 
         public static event Action<int> CoinsChanged;
         public static event Action<int> HintsChanged;
+        public static event Action<BoosterType, int> BoostersChanged;
 
         static Progress()
         {
@@ -36,7 +39,7 @@ namespace ColorMelt.Meta
         {
             if (amount == 0) return;
             PlayerPrefs.SetInt(CoinsKey, Mathf.Max(0, Coins + amount));
-            PlayerPrefs.Save();
+            PrefsSaver.Request();
             CoinsChanged?.Invoke(Coins);
             if (amount > 0) Achievements.Add(AchievementStat.CoinsEarned, amount);
         }
@@ -50,11 +53,33 @@ namespace ColorMelt.Meta
 
         public static int Hints => PlayerPrefs.GetInt(HintsKey, 0);
 
-        public static void AddHints(int amount)
+        public static void AddHints(int amount) => AddBooster(BoosterType.Hint, amount);
+
+        // Hints keep their original key; the other boosters start with the
+        // amounts in GameConfig, also for players who saved before they existed.
+        private static string BoosterKey(BoosterType type) =>
+            type == BoosterType.Hint ? HintsKey : BoosterKeyPrefix + type;
+
+        public static int GetBoosters(BoosterType type) =>
+            PlayerPrefs.GetInt(BoosterKey(type), GameConfig.Instance.BoosterStartCount(type));
+
+        public static void AddBooster(BoosterType type, int amount)
         {
-            PlayerPrefs.SetInt(HintsKey, Mathf.Max(0, Hints + amount));
-            PlayerPrefs.Save();
-            HintsChanged?.Invoke(Hints);
+            var count = Mathf.Max(0, GetBoosters(type) + amount);
+            PlayerPrefs.SetInt(BoosterKey(type), count);
+            PrefsSaver.Request();
+            BoostersChanged?.Invoke(type, count);
+            if (type == BoosterType.Hint) HintsChanged?.Invoke(count);
+        }
+
+        /// <summary>True the first time it is asked for a booster, so its intro shows once.</summary>
+        public static bool MarkBoosterSeen(BoosterType type)
+        {
+            var key = BoosterSeenKeyPrefix + type;
+            if (PlayerPrefs.GetInt(key, 0) == 1) return false;
+            PlayerPrefs.SetInt(key, 1);
+            PrefsSaver.Request();
+            return true;
         }
 
         /// <summary>Highest level index the player may start (0-based).</summary>

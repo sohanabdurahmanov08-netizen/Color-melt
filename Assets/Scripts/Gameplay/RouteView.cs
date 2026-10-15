@@ -26,6 +26,7 @@ namespace ColorMelt.Gameplay
         public ColorType SourceColor { get; private set; }
         public ChannelView Channel { get; private set; }
         public PourStream Stream { get; private set; }
+        public OutletFall Fall { get; private set; }
         public IReadOnlyList<BlockView> Blocks => _blocks;
 
         public void Initialize(int index, ColorType sourceColor, ChannelView channel, Transform source,
@@ -41,6 +42,13 @@ namespace ColorMelt.Gameplay
             _unit = unit;
             channel.SetAccent(sourceColor);
         }
+
+        public void SetFall(OutletFall fall) => Fall = fall;
+
+        /// <summary>End of the channel, where free paint pours off.</summary>
+        public Vector3 OutletPoint => Channel.GetPoint(1f);
+
+        public Vector3 OutletDirection => (Channel.GetPoint(1f) - Channel.GetPoint(0.95f)).normalized;
 
         public void AddBlock(BlockView block, float position)
         {
@@ -85,47 +93,38 @@ namespace ColorMelt.Gameplay
             if (_source != null && _source.localRotation != _sourceTarget)
                 _source.localRotation = Quaternion.Slerp(_source.localRotation, _sourceTarget,
                     1f - Mathf.Exp(-10f * Time.deltaTime));
+
+            // Paint that runs all the way down pours off the end.
+            if (Fall == null) return;
+            if (Channel.ReachesOutlet)
+                Fall.Flow(OutletPoint, OutletDirection, Channel.PaintColor, _unit);
+            else
+                Fall.Stop();
         }
 
-        /// <summary>Screen-space bounds of every visible part of the route.</summary>
-        public bool TryGetScreenRect(Camera cam, out Rect rect)
+        private const int CentreLineSamples = 12;
+
+        /// <summary>
+        /// Screen distance from a point to the route's centre line, which runs
+        /// from the paint source down the channel to its outlet. Tapping picks
+        /// the nearest centre line, so every channel owns a wide strip of the
+        /// screen however the perspective slants it.
+        /// </summary>
+        public float ScreenDistance(Camera cam, Vector2 point)
         {
-            var hasPoint = false;
-            var min = Vector2.zero;
-            var max = Vector2.zero;
-            var corners = new Vector3[8];
-
-            foreach (var renderer in _renderers)
+            var best = float.MaxValue;
+            var previous = (Vector2)cam.WorldToScreenPoint(SourcePoint);
+            for (var i = 0; i <= CentreLineSamples; i++)
             {
-                if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy ||
-                    renderer is LineRenderer || renderer is ParticleSystemRenderer)
-                    continue;
-
-                var b = renderer.bounds;
-                for (var i = 0; i < 8; i++)
-                    corners[i] = new Vector3((i & 1) == 0 ? b.min.x : b.max.x, (i & 2) == 0 ? b.min.y : b.max.y,
-                        (i & 4) == 0 ? b.min.z : b.max.z);
-
-                foreach (var corner in corners)
-                {
-                    var screen = cam.WorldToScreenPoint(corner);
-                    if (screen.z <= 0f) continue;
-
-                    if (!hasPoint)
-                    {
-                        min = max = screen;
-                        hasPoint = true;
-                    }
-                    else
-                    {
-                        min = Vector2.Min(min, screen);
-                        max = Vector2.Max(max, screen);
-                    }
-                }
+                var next = (Vector2)cam.WorldToScreenPoint(Channel.GetPoint(i / (float)CentreLineSamples));
+                var segment = next - previous;
+                var along = segment.sqrMagnitude > 0f
+                    ? Mathf.Clamp01(Vector2.Dot(point - previous, segment) / segment.sqrMagnitude)
+                    : 0f;
+                best = Mathf.Min(best, Vector2.Distance(point, previous + segment * along));
+                previous = next;
             }
-
-            rect = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
-            return hasPoint;
+            return best;
         }
 
         /// <summary>World bounds of every visible part of the route.</summary>

@@ -24,32 +24,43 @@ namespace ColorMelt.Core
             if (start.AllMelted)
                 return new List<Move>();
 
-            var visited = new HashSet<ulong> { start.StateKey() };
-            var queue = new Queue<Node>();
-            queue.Enqueue(new Node(start, null, default));
+            // States are kept as StateKeys and replayed on one scratch model,
+            // so the search allocates almost nothing (hints run on the phone).
+            var model = start.Clone();
+            var startKey = model.StateKey();
+            var parents = new Dictionary<ulong, Step> { { startKey, default } };
+            var queue = new Queue<ulong>();
+            queue.Enqueue(startKey);
+            var routes = model.RouteCount;
+            var targets = new int[routes];
 
-            while (queue.Count > 0 && visited.Count < MaxStates)
+            while (queue.Count > 0 && parents.Count < MaxStates)
             {
-                var node = queue.Dequeue();
-                for (var from = 0; from < node.model.RouteCount; from++)
+                var key = queue.Dequeue();
+                model.LoadStateKey(key);
+                for (var route = 0; route < routes; route++)
+                    targets[route] = model.TargetOf(route);
+
+                for (var from = 0; from < routes; from++)
                 {
                     for (var to = from - 1; to <= from + 1; to++)
                     {
-                        if (!node.model.CanPour(from, to) || node.model.TargetOf(from) == to)
+                        if (to < 0 || to >= routes || targets[from] == to)
                             continue;
 
-                        var next = node.model.Clone();
-                        next.Pour(from, to);
-                        next.ResolveAll();
+                        model.LoadStateKey(key);
+                        model.Pour(from, to);
+                        model.ResolveAll();
 
-                        if (!visited.Add(next.StateKey()))
+                        var next = model.StateKey();
+                        if (parents.ContainsKey(next))
                             continue;
 
-                        var child = new Node(next, node, new Move(from, to));
-                        if (next.AllMelted)
-                            return child.Path();
+                        parents.Add(next, new Step(key, new Move(from, to)));
+                        if (model.AllMelted)
+                            return Path(parents, startKey, next);
 
-                        queue.Enqueue(child);
+                        queue.Enqueue(next);
                     }
                 }
             }
@@ -57,26 +68,24 @@ namespace ColorMelt.Core
             return null;
         }
 
-        private sealed class Node
+        private static List<Move> Path(Dictionary<ulong, Step> parents, ulong startKey, ulong goal)
         {
-            public readonly FlowModel model;
-            private readonly Node _parent;
-            private readonly Move _move;
+            var path = new List<Move>();
+            for (var key = goal; key != startKey; key = parents[key].parent)
+                path.Add(parents[key].move);
+            path.Reverse();
+            return path;
+        }
 
-            public Node(FlowModel model, Node parent, Move move)
-            {
-                this.model = model;
-                _parent = parent;
-                _move = move;
-            }
+        private readonly struct Step
+        {
+            public readonly ulong parent;
+            public readonly Move move;
 
-            public List<Move> Path()
+            public Step(ulong parent, Move move)
             {
-                var path = new List<Move>();
-                for (var node = this; node._parent != null; node = node._parent)
-                    path.Add(node._move);
-                path.Reverse();
-                return path;
+                this.parent = parent;
+                this.move = move;
             }
         }
     }

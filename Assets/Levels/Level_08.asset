@@ -13,20 +13,26 @@ MonoBehaviour:
   m_Name: Level_08
   m_EditorClassIdentifier: Assembly-CSharp::ColorMelt.Core.LevelData
   maxMoves: 5
-  tutorial: 0
+  tutorial: 1
+  tutorialIntro: tutorial.two_intro
+  tutorialSteps: 2
+  difficulty: 0
   routes:
   - color: 6
     blocks: []
   - color: 8
     blocks:
     - color: 17
+      inner: 0
       position: 0.85
   - color: 5
     blocks:
     - color: 15
+      inner: 0
       position: 0.85
   - color: 9
     blocks:
     - color: 22
+      inner: 0
       position: 0.85
   optimalMoves: 4

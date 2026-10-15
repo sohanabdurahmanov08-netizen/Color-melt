@@ -39,13 +39,37 @@ namespace ColorMelt.Gameplay
         [SerializeField, Min(0f)] private float flowDelay = 0.45f;
         [SerializeField, Min(0f)] private float meltTime = 0.4f;
 
+        [Header("Combo feel")]
+        [Tooltip("Melt sound pitch added for every further block melted by the same pour.")]
+        [SerializeField, Range(0f, 0.3f)] private float comboPitchStep = 0.12f;
+        [SerializeField, Range(1f, 2f)] private float maxComboPitch = 1.6f;
+        [Tooltip("Time scale during the short slow-motion beat of a combo.")]
+        [SerializeField, Range(0.1f, 1f)] private float comboSlowMotion = 0.4f;
+        [Tooltip("Board shake on a combo, in board units.")]
+        [SerializeField, Min(0f)] private float comboShake = 0.12f;
+
         [Header("Camera")]
         [Tooltip("Screen share kept free around the board for the HUD (viewport fractions).")]
         [SerializeField, Range(0f, 0.4f)] private float framePaddingTop = 0.16f;
         [SerializeField, Range(0f, 0.4f)] private float framePaddingBottom = 0.12f;
         [SerializeField, Range(0f, 0.4f)] private float framePaddingSides = 0.05f;
+        [Tooltip("How close the camera may come to small boards, as a share of its distance in the scene.")]
+        [SerializeField, Range(0.3f, 1f)] private float closestFraming = 0.6f;
+
+        private const int MaxUndo = 30;
+
+        private sealed class UndoState
+        {
+            public FlowModel model;
+            public int movesLeft;
+            public int movesUsed;
+            /// <summary>Coins the melts after this snapshot paid out; undo takes them back.</summary>
+            public int coins;
+        }
 
         private readonly List<RouteView> _routes = new List<RouteView>();
+        private readonly List<UndoState> _undo = new List<UndoState>();
+        private Coroutine _comboFeel;
         private ColorType[] _lastReached;
         private Vector3 _cameraRestPosition;
         private bool _resolving;
@@ -54,7 +78,9 @@ namespace ColorMelt.Gameplay
         public event Action Started;
         public event Action<int> MovesChanged;
         public event Action<Move> Poured;
-        public event Action<RouteView, BlockView> BlockMelted;
+        /// <summary>A block (or one layer of it) melted; the int is its step in the chain, 1 = first.</summary>
+        public event Action<RouteView, BlockView, int> BlockMelted;
+        public event Action Undone;
         public event Action<LevelResult> Won;
         public event Action Lost;
         public event Action Continued;
@@ -73,6 +99,12 @@ namespace ColorMelt.Gameplay
         public Bounds BoardBounds { get; private set; }
         public int MovesLeft { get; private set; }
         public int MovesUsed { get; private set; }
+
+        /// <summary>
+        /// True if this play is a guided tutorial: the level has one and has not
+        /// been won yet (replays play normally).
+        /// </summary>
+        public bool IsGuided => Level != null && Level.tutorial && Progress.GetStars(LevelIndex) == 0;
 
         /// <summary>True while melts are playing or the level is over.</summary>
         public bool IsBusy => _resolving || _finished;
@@ -135,7 +167,7 @@ namespace ColorMelt.Gameplay
 
             // A block matching its own channel at the start melts right away.
             if (Model.FindMeltable().Count > 0)
-                StartCoroutine(Resolve(fromPour: false));
+                StartCoroutine(Resolve(fromPour: false, forced: null));
         }
 
         public bool CanPour(int from, int to) =>
@@ -145,6 +177,7 @@ namespace ColorMelt.Gameplay
         {
             if (!CanPour(from, to)) return false;
 
+            SaveUndo();
             Model.Pour(from, to);
             MovesLeft--;
             MovesUsed++;
@@ -153,11 +186,12 @@ namespace ColorMelt.Gameplay
             MovesChanged?.Invoke(MovesLeft);
             Poured?.Invoke(new Move(from, to));
             Achievements.Add(AchievementStat.Pours);
+            Haptics.Light();
 
             // Input stays free for set-up pours; it only locks while blocks
             // melt or when the last move has been spent.
             if (Model.FindMeltable().Count > 0 || MovesLeft <= 0)
-                StartCoroutine(Resolve(fromPour: true));
+                StartCoroutine(Resolve(fromPour: true, forced: null));
             else
                 StartCoroutine(NudgeAfterFlow());
             return true;
@@ -182,13 +216,106 @@ namespace ColorMelt.Gameplay
             Continued?.Invoke();
         }
 
-        private IEnumerator Resolve(bool fromPour)
+        // ---------------------------------------------------------- boosters
+
+        public bool CanUndo => !IsBusy && _undo.Count > 0;
+
+        /// <summary>Takes back the last pour (or rainbow), with the moves it cost.</summary>
+        public bool Undo()
+        {
+            if (!CanUndo) return false;
+
+            var state = _undo[_undo.Count - 1];
+            _undo.RemoveAt(_undo.Count - 1);
+            Model.CopyFrom(state.model);
+            MovesLeft = state.movesLeft;
+            MovesUsed = state.movesUsed;
+            if (state.coins > 0) Progress.AddCoins(-state.coins);
+
+            for (var index = 0; index < _routes.Count; index++)
+            {
+                var blocks = _routes[index].Blocks;
+                for (var block = 0; block < blocks.Count; block++)
+                {
+                    var reference = new BlockRef(index, block);
+                    blocks[block].SetState(Model.IsPeeled(reference), Model.IsMelted(reference));
+                }
+                _lastReached[index] = Model.ChannelColor(index);
+            }
+
+            RefreshViews(snap: false);
+            MovesChanged?.Invoke(MovesLeft);
+            Undone?.Invoke();
+            return true;
+        }
+
+        /// <summary>True if the rainbow drop has something to melt in this channel.</summary>
+        public bool CanRainbow(int route) => !IsBusy && route >= 0 && route < _routes.Count &&
+                                             Model.FirstIntactBlock(route) >= 0;
+
+        /// <summary>Melts the first intact block of a channel, every layer, without spending a move.</summary>
+        public bool UseRainbow(int route)
+        {
+            if (!CanRainbow(route)) return false;
+
+            SaveUndo();
+            var block = new BlockRef(route, Model.FirstIntactBlock(route));
+            StartCoroutine(Resolve(fromPour: false, forced: block));
+            return true;
+        }
+
+        public bool CanAddMoves => !IsBusy && MovesLeft > 0;
+
+        /// <summary>Extra moves while the level is still running (booster).</summary>
+        public bool AddMoves(int extraMoves)
+        {
+            if (!CanAddMoves || extraMoves <= 0) return false;
+            MovesLeft += extraMoves;
+            MovesChanged?.Invoke(MovesLeft);
+            return true;
+        }
+
+        private void PayMelt()
+        {
+            var coins = GameConfig.Instance.coinsPerBlock;
+            Progress.AddCoins(coins);
+            if (_undo.Count > 0) _undo[_undo.Count - 1].coins += coins;
+        }
+
+        private void SaveUndo()
+        {
+            _undo.Add(new UndoState { model = Model.Clone(), movesLeft = MovesLeft, movesUsed = MovesUsed });
+            if (_undo.Count > MaxUndo) _undo.RemoveAt(0);
+        }
+
+        // ------------------------------------------------------------ melting
+
+        private IEnumerator Resolve(bool fromPour, BlockRef? forced)
         {
             _resolving = true;
-            yield return new WaitForSeconds(flowDelay);
 
             // Blocks melted by this pour, including the cascade after it.
             var chain = 0;
+
+            if (forced.HasValue)
+            {
+                var block = forced.Value;
+                Model.MeltWhole(block);
+                var route = _routes[block.route];
+                var view = route.Blocks[block.index];
+                view.Melt(1.15f);
+                chain++;
+                PayMelt();
+                Haptics.Heavy();
+                BlockMelted?.Invoke(route, view, chain);
+                Achievements.Add(AchievementStat.BlocksMelted);
+
+                yield return new WaitForSeconds(meltTime);
+                Model.ResetTargets();
+                RefreshViews(snap: false);
+            }
+
+            yield return new WaitForSeconds(flowDelay);
 
             while (true)
             {
@@ -197,18 +324,30 @@ namespace ColorMelt.Gameplay
                 var meltable = Model.FindMeltable();
                 if (meltable.Count == 0) break;
 
+                var gone = 0;
                 foreach (var block in meltable)
                 {
-                    Model.Melt(block);
+                    chain++;
                     var route = _routes[block.route];
                     var view = route.Blocks[block.index];
-                    view.Melt();
-                    Progress.AddCoins(GameConfig.Instance.coinsPerBlock);
-                    Haptics.Impact();
-                    BlockMelted?.Invoke(route, view);
+                    // Each melt in a chain sounds a step higher.
+                    var pitch = Mathf.Min(1f + comboPitchStep * (chain - 1), maxComboPitch);
+                    if (Model.Melt(block))
+                    {
+                        view.Melt(pitch);
+                        gone++;
+                    }
+                    else
+                    {
+                        view.Peel(pitch);
+                    }
+                    PayMelt();
+                    Haptics.Chain(chain);
+                    BlockMelted?.Invoke(route, view, chain);
                 }
-                chain += meltable.Count;
-                Achievements.Add(AchievementStat.BlocksMelted, meltable.Count);
+                Achievements.Add(AchievementStat.BlocksMelted, gone);
+
+                if (chain >= 2) PlayComboFeel(chain);
 
                 yield return new WaitForSeconds(meltTime);
 
@@ -228,6 +367,51 @@ namespace ColorMelt.Gameplay
                 Lose();
         }
 
+        /// <summary>Combo moment: a short slow-motion beat and a board shake that grow with the chain.</summary>
+        private void PlayComboFeel(int chain)
+        {
+            if (_comboFeel != null) StopCoroutine(_comboFeel);
+            _comboFeel = StartCoroutine(ComboFeel(chain));
+        }
+
+        private IEnumerator ComboFeel(int chain)
+        {
+            var strength = Mathf.Clamp01((chain - 1) / 3f);
+            var board = builder != null ? builder.transform : null;
+            var rest = board != null ? board.localPosition : Vector3.zero;
+            var amplitude = comboShake * (builder != null ? builder.Unit : 1f) * Mathf.Lerp(0.6f, 1f, strength);
+            var slowScale = Mathf.Lerp(comboSlowMotion, comboSlowMotion * 0.75f, strength);
+
+            const float slowHold = 0.22f;
+            const float slowRelease = 0.25f;
+            const float shakeTime = 0.3f;
+            for (var time = 0f; time < slowHold + slowRelease; time += Time.unscaledDeltaTime)
+            {
+                Time.timeScale = time < slowHold
+                    ? slowScale
+                    : Mathf.Lerp(slowScale, 1f, (time - slowHold) / slowRelease);
+
+                if (board != null)
+                {
+                    var fade = Mathf.Clamp01(1f - time / shakeTime);
+                    board.localPosition = rest + new Vector3(
+                        Mathf.Sin(time * 71f), Mathf.Sin(time * 53f + 1.3f) * 0.5f, Mathf.Sin(time * 61f + 2.1f)) *
+                        (amplitude * fade);
+                }
+                yield return null;
+            }
+
+            Time.timeScale = 1f;
+            if (board != null) board.localPosition = rest;
+            _comboFeel = null;
+        }
+
+        private void OnDisable()
+        {
+            // Never leave the game in slow motion.
+            Time.timeScale = 1f;
+        }
+
         private IEnumerator NudgeAfterFlow()
         {
             yield return new WaitForSeconds(flowDelay);
@@ -237,13 +421,16 @@ namespace ColorMelt.Gameplay
         private void Win()
         {
             _finished = true;
+            _undo.Clear();
             var config = GameConfig.Instance;
             var stars = config.StarsFor(MovesUsed, Level.optimalMoves);
-            var reward = config.coinsPerWin + config.coinsPerStar * stars;
+            var reward = Mathf.RoundToInt((config.coinsPerWin + config.coinsPerStar * stars) *
+                                          config.RewardMultiplier(Level.difficulty));
             Progress.AddCoins(reward);
             Progress.CompleteLevel(LevelIndex, stars);
             // Also re-checks the level and star achievements.
             Achievements.ReportBest(AchievementStat.MovesLeftAtWin, MovesLeft);
+            Haptics.Heavy();
             Won?.Invoke(new LevelResult(stars, MovesUsed, reward));
         }
 
@@ -286,8 +473,8 @@ namespace ColorMelt.Gameplay
         /// <summary>
         /// Moves the camera (keeping its rotation) so the whole board is centred
         /// in the screen area left free by the HUD, pulling back as far as wide
-        /// boards need. The board is never shown larger than in the scene's
-        /// camera pose.
+        /// boards need and coming closer for small ones (down to closestFraming
+        /// of the scene camera's distance).
         /// </summary>
         private void FrameCamera()
         {
@@ -357,10 +544,11 @@ namespace ColorMelt.Gameplay
                 RequiredBack(p => p.x, tanX, left, right),
                 RequiredBack(p => p.y, tanY, bottom, top));
 
-            // Never closer to the board than the pose set up in the scene.
+            // Small boards fill the free area too, but the camera stops at
+            // closestFraming of its scene distance so they never look huge.
             var centerZ = (toCamera * board.center).z;
             var restDepth = centerZ - (toCamera * _cameraRestPosition).z;
-            back = Mathf.Max(back, restDepth - centerZ);
+            back = Mathf.Max(back, restDepth * closestFraming - centerZ);
 
             var position = new Vector3(
                 Centered(p => p.x, tanX, left, right, back),

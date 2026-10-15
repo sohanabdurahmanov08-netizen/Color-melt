@@ -72,6 +72,12 @@ namespace ColorMelt.Gameplay
         public ChannelHighlight Highlight => _highlight;
         public Renderer BodyRenderer => bodyRenderer;
 
+        /// <summary>True while paint fills the channel to its very end.</summary>
+        public bool ReachesOutlet => _hasPaint && _currentFill >= 0.995f;
+
+        /// <summary>Colour of the paint now flowing in (the newest colour).</summary>
+        public Color PaintColor => _color;
+
         private void Awake() => Initialize();
 
         private void Initialize()

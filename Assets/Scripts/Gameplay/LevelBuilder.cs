@@ -23,11 +23,16 @@ namespace ColorMelt.Gameplay
         [SerializeField] private GameObject sourcePrefab;
         [SerializeField] private Material sourceMaterial;
         [SerializeField] private Material streamMaterial;
+        [Tooltip("Paint pouring off free channel ends (ColorMelt/PaintFall).")]
+        [SerializeField] private Material fallMaterial;
 
         [Header("Layout (local units)")]
         [Tooltip("Position of the middle route's channel.")]
         [SerializeField] private Vector3 routeOrigin = new Vector3(13.87f, 0f, -0.67f);
-        [SerializeField, Min(0.5f)] private float routeSpacing = 3.5f;
+        [SerializeField, Min(0.5f)] private float routeSpacing = 4.4f;
+        [Tooltip("Widens the channels (and their blocks, sources and falling paint) without making them longer, " +
+                 "so they are easier to tap. Keep routeSpacing a good deal wider than 2 x this.")]
+        [SerializeField, Range(1f, 2f)] private float channelWidth = 1.35f;
         [SerializeField] private float blockLift = 0.5f;
         [SerializeField] private float sourceHeight = 1.1f;
         [SerializeField] private Vector3 sourceScale = new Vector3(1.3f, 0.45f, 1.3f);
@@ -56,20 +61,26 @@ namespace ColorMelt.Gameplay
                 var channel = Instantiate(channelPrefab, root);
                 channel.name = "Channel";
                 channel.transform.localPosition = Vector3.zero;
+                // Routes sit side by side along Z, so Z is across the channel.
+                channel.transform.localScale = Vector3.Scale(channel.transform.localScale, new Vector3(1f, 1f, channelWidth));
 
                 var source = CreateSource(root, channel, data.color);
                 var stream = CreateStream(root);
+                var fall = CreateFall(root);
 
                 var route = root.gameObject.AddComponent<RouteView>();
                 route.Initialize(index, data.color, channel, source, stream, Unit);
+                fall.WidthScale = channelWidth;
+                route.SetFall(fall);
 
                 foreach (var blockData in data.blocks)
                 {
                     var block = Instantiate(blockPrefab, root);
                     block.name = $"Block ({blockData.color})";
-                    block.transform.position = channel.GetPoint(blockData.position) + Vector3.up * (blockLift * Unit);
+                    block.transform.position = channel.GetPoint(blockData.position) + Vector3.up * (blockLift * channelWidth * Unit);
                     block.transform.localRotation = Quaternion.identity;
-                    block.Configure(blockData.color);
+                    block.transform.localScale *= channelWidth;
+                    block.Configure(blockData.color, blockData.inner);
                     route.AddBlock(block, blockData.position);
                 }
 
@@ -106,7 +117,7 @@ namespace ColorMelt.Gameplay
             {
                 source = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 source.transform.SetParent(root, false);
-                source.transform.localScale = sourceScale;
+                source.transform.localScale = Vector3.Scale(sourceScale, new Vector3(channelWidth, 1f, channelWidth));
                 var generatedCollider = source.GetComponent<Collider>();
                 if (Application.isPlaying) Destroy(generatedCollider);
                 else DestroyImmediate(generatedCollider);
@@ -128,6 +139,14 @@ namespace ColorMelt.Gameplay
             }
 
             return source.transform;
+        }
+
+        private OutletFall CreateFall(Transform root)
+        {
+            var fallObject = new GameObject("Outlet fall", typeof(MeshFilter), typeof(MeshRenderer));
+            fallObject.transform.SetParent(root, false);
+            fallObject.GetComponent<MeshRenderer>().sharedMaterial = fallMaterial != null ? fallMaterial : streamMaterial;
+            return fallObject.AddComponent<OutletFall>();
         }
 
         private PourStream CreateStream(Transform root)

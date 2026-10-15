@@ -35,6 +35,9 @@ namespace ColorMelt.Gameplay
         private float _lastHue = -1f;
         private bool _busy;
 
+        /// <summary>True while paint covers or uncovers the screen between scenes.</summary>
+        public static bool IsTransitioning => _instance != null && _instance._busy;
+
         public static SceneFader Instance
         {
             get

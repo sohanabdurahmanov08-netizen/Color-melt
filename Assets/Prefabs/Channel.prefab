@@ -177,7 +177,6 @@ MonoBehaviour:
   liquidRenderer: {fileID: 4523124502241633374}
   bodyRenderer: {fileID: 4617522211071941407}
   fillSpeed: 1.6
-  colorBlendSpeed: 4
   pulseSpeed: 7
   selectedLift: 0.35
   path:
@@ -358,7 +357,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 6b63e22ed87273344be12842295125ae, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -50,6 +50,10 @@ praise.5	Sweet!	Здорово!	Barakalla!
 # Win and lose windows
 win.title	VICTORY!	ПОБЕДА!	G‘ALABA!
 win.subtitle	LEVEL {0} COMPLETE!	УРОВЕНЬ {0} ПРОЙДЕН!	{0}-BOSQICH YAKUNLANDI!
+win.all_done	ALL LEVELS COMPLETE!
+NEW ONES COMING SOON	ВСЕ УРОВНИ ПРОЙДЕНЫ!
+СКОРО БУДУТ НОВЫЕ	BARCHA BOSQICHLAR YAKUNLANDI!
+TEZ ORADA YANGILARI
 win.claim_x2	CLAIM x2\n<size=65%>watch ad</size>	ЗАБРАТЬ x2\n<size=65%>за рекламу</size>	x2 OLISH\n<size=65%>reklama ko‘rib</size>
 lose.title	DEFEAT	ПОРАЖЕНИЕ	MAG‘LUBIYAT
 lose.out_of_moves	OUT OF MOVES	ХОДЫ ЗАКОНЧИЛИСЬ	YURISHLAR TUGADI
@@ -208,3 +212,34 @@ ach.desc.CoinsEarned.one	Earn {0} coin	Заработайте {0} монету	{
 ach.desc.CoinsEarned.few		Заработайте {0} монеты	
 ach.desc.CoinsEarned.many		Заработайте {0} монет	
 ach.desc.CoinsEarned.other	Earn {0} coins		{0} ta tanga yig‘ing
+
+# Boosters. booster.<type> is the button label, booster.intro.<type> the first-time message.
+booster.Hint	HINT	ПОДСКАЗКА	MASLAHAT
+booster.Undo	UNDO	ОТМЕНА	ORTGA
+booster.Rainbow	RAINBOW	РАДУГА	KAMALAK
+booster.ExtraMoves	MOVES	ХОДЫ	YURISH
+booster.intro.Hint	New booster: HINT!\nShows the best next move	Новый бустер: ПОДСКАЗКА!\nПокажет лучший ход	Yangi kuchaytirgich: MASLAHAT!\nEng yaxshi yurishni ko‘rsatadi
+booster.intro.Undo	New booster: UNDO!\nTakes back your last move	Новый бустер: ОТМЕНА!\nВернёт последний ход	Yangi kuchaytirgich: ORTGA!\nOxirgi yurishni qaytaradi
+booster.intro.Rainbow	New booster: RAINBOW!\nMelts any block you tap	Новый бустер: РАДУГА!\nРастопит любой блок	Yangi kuchaytirgich: KAMALAK!\nIstalgan blokni eritadi
+booster.intro.ExtraMoves	New booster: +{0} MOVES!\nFor when you need a little more	Новый бустер: +{0} ХОДА!\nКогда не хватает чуть-чуть	Yangi kuchaytirgich: +{0} YURISH!\nOzgina yetmay qolganda
+booster.rainbow_pick	Tap a channel: its block melts	Нажмите на канал — его блок растает	Kanalni bosing — undagi blok eriydi
+toast.nothing_to_undo	Nothing to undo	Нечего отменять	Qaytaradigan yurish yo‘q
+
+# Combo pop-up when one pour melts several blocks. {0} is the count.
+combo	COMBO x{0}!	КОМБО x{0}!	KOMBO x{0}!
+
+# Hard and Boss levels. {0} is the reward multiplier.
+difficulty.Hard	HARD LEVEL	СЛОЖНЫЙ УРОВЕНЬ	QIYIN BOSQICH
+difficulty.Boss	BOSS LEVEL	БОСС-УРОВЕНЬ	BOSS BOSQICH
+difficulty.reward	Reward x{0}	Награда x{0}	Mukofot x{0}
+
+# Banner on the first level with layered blocks
+tutorial.layers	NEW: LAYERED BLOCKS\n<size=80%>Melt the outer colour first, then the core</size>	НОВОЕ: БЛОКИ В ДВА СЛОЯ\n<size=80%>Сначала растопите внешний цвет, потом ядро</size>	YANGI: IKKI QATLAMLI BLOKLAR\n<size=80%>Avval tashqi rangni, keyin o‘zakni eriting</size>
+
+# Guided tutorials for two colours in one channel (level 8) and layered blocks (level 12). {0}, {1} are colour names.
+tutorial.two_intro	Some blocks need TWO colours.\nPour into one channel from both neighbours!	Некоторым блокам нужны ДВА цвета.\nНалейте в один канал краску из обоих соседей!	Ba’zi bloklarga IKKI rang kerak.\nBitta kanalga ikkala qo‘shnidan bo‘yoq quying!
+tutorial.add_second	{0} is in.\nNow add {1} from the other side!	{0} уже в канале.\nТеперь добавьте {1} с другой стороны!	{0} kanalda.\nEndi boshqa tomondan {1} qo‘shing!
+tutorial.layers_intro	These blocks have TWO layers.\nMelt the outside first, then the core inside!	У этих блоков ДВА слоя.\nСначала растопите внешний, потом ядро внутри!	Bu bloklar IKKI qatlamli.\nAvval tashqi qatlamni, keyin ichidagi o‘zakni eriting!
+tutorial.layer_chain	The shell ({0}) melted, then the core ({1}) too:\nits paint was already in the channel!	Оболочка ({0}) растаяла, а за ней и ядро ({1}):\nнужная краска уже была в канале!	Qobiq ({0}) eridi, ortidan o‘zak ({1}) ham:\nkerakli bo‘yoq kanalda bor edi!
+tutorial.layer_next	The shell melted!\nNow the core needs {0}	Оболочка растаяла!\nТеперь ядру нужен цвет {0}	Qobiq eridi!\nEndi o‘zakka {0} rang kerak
+tutorial.your_turn	Now finish it yourself!	Дальше — сами!	Endi o‘zingiz davom eting!

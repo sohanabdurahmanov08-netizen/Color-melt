@@ -113,3 +113,7 @@ InitTestScene*.unity*
 /[Aa]ssets/_Recovery/
 /[Aa]ssets/_Recovery.meta
 /uColor_Melt/
+
+# Generated during player builds
+/[Aa]ssets/[Rr]esources/PerformanceTestRun*.json*
+/[Aa]ssets/packages-merged-link*

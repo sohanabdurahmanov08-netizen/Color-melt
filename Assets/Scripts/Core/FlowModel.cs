@@ -36,15 +36,18 @@ namespace ColorMelt.Core
     /// neighbouring one. A channel's paint is the mix of every source pouring
     /// into it. Paint runs down the channel until the first intact block; if
     /// the paint has exactly the block's colour the block melts (Mud never
-    /// melts anything, see ColorType.Mix). After any melt all sources return
-    /// to their own channels.
+    /// melts anything, see ColorType.Mix). A layered block melts in two
+    /// steps: its outer colour first, then the inner one. After any melt all
+    /// sources return to their own channels.
     /// </summary>
     public sealed class FlowModel
     {
         private readonly ColorType[] _sources;
         private readonly ColorType[][] _blocks;
+        private readonly ColorType[][] _inner;
         private readonly int[] _targets;
         private readonly bool[][] _melted;
+        private readonly bool[][] _peeled;
         private readonly ColorType[] _channelColors;
 
         public int RouteCount => _sources.Length;
@@ -54,8 +57,10 @@ namespace ColorMelt.Core
             var count = level.routes.Count;
             _sources = new ColorType[count];
             _blocks = new ColorType[count][];
+            _inner = new ColorType[count][];
             _targets = new int[count];
             _melted = new bool[count][];
+            _peeled = new bool[count][];
             _channelColors = new ColorType[count];
 
             for (var route = 0; route < count; route++)
@@ -64,9 +69,14 @@ namespace ColorMelt.Core
                 _sources[route] = data.color;
                 _targets[route] = route;
                 _blocks[route] = new ColorType[data.blocks.Count];
+                _inner[route] = new ColorType[data.blocks.Count];
                 _melted[route] = new bool[data.blocks.Count];
+                _peeled[route] = new bool[data.blocks.Count];
                 for (var block = 0; block < data.blocks.Count; block++)
+                {
                     _blocks[route][block] = data.blocks[block].color;
+                    _inner[route][block] = data.blocks[block].inner;
+                }
             }
 
             Recalculate();
@@ -76,20 +86,43 @@ namespace ColorMelt.Core
         {
             _sources = other._sources;
             _blocks = other._blocks;
+            _inner = other._inner;
             _targets = (int[])other._targets.Clone();
             _melted = new bool[other._melted.Length][];
+            _peeled = new bool[other._peeled.Length][];
             for (var route = 0; route < _melted.Length; route++)
+            {
                 _melted[route] = (bool[])other._melted[route].Clone();
+                _peeled[route] = (bool[])other._peeled[route].Clone();
+            }
             _channelColors = (ColorType[])other._channelColors.Clone();
         }
 
         public FlowModel Clone() => new FlowModel(this);
 
+        /// <summary>Takes over another state of the same level (used by undo).</summary>
+        public void CopyFrom(FlowModel other)
+        {
+            other._targets.CopyTo(_targets, 0);
+            other._channelColors.CopyTo(_channelColors, 0);
+            for (var route = 0; route < _melted.Length; route++)
+            {
+                other._melted[route].CopyTo(_melted[route], 0);
+                other._peeled[route].CopyTo(_peeled[route], 0);
+            }
+        }
+
         public ColorType SourceColor(int route) => _sources[route];
         public ColorType ChannelColor(int route) => _channelColors[route];
         public int TargetOf(int route) => _targets[route];
         public int BlockCount(int route) => _blocks[route].Length;
-        public ColorType BlockColor(BlockRef block) => _blocks[block.route][block.index];
+        /// <summary>Colour the block shows now: the inner layer once the outer one has melted.</summary>
+        public ColorType BlockColor(BlockRef block) =>
+            _peeled[block.route][block.index] ? _inner[block.route][block.index] : _blocks[block.route][block.index];
+        public ColorType OuterColor(BlockRef block) => _blocks[block.route][block.index];
+        public ColorType InnerColor(BlockRef block) => _inner[block.route][block.index];
+        public bool IsLayered(BlockRef block) => _inner[block.route][block.index] != ColorType.None;
+        public bool IsPeeled(BlockRef block) => _peeled[block.route][block.index];
         public bool IsMelted(BlockRef block) => _melted[block.route][block.index];
 
         public bool AllMelted
@@ -167,13 +200,34 @@ namespace ColorMelt.Core
             for (var route = 0; route < RouteCount; route++)
             {
                 var block = FirstIntactBlock(route);
-                if (block >= 0 && _channelColors[route].Melts(_blocks[route][block]))
+                if (block >= 0 && _channelColors[route].Melts(BlockColor(new BlockRef(route, block))))
                     result.Add(new BlockRef(route, block));
             }
             return result;
         }
 
-        public void Melt(BlockRef block) => _melted[block.route][block.index] = true;
+        /// <summary>
+        /// Melts one layer. Returns true if the block is gone, false if only
+        /// its outer layer melted and the inner colour now shows.
+        /// </summary>
+        public bool Melt(BlockRef block)
+        {
+            if (IsLayered(block) && !_peeled[block.route][block.index])
+            {
+                _peeled[block.route][block.index] = true;
+                return false;
+            }
+
+            _melted[block.route][block.index] = true;
+            return true;
+        }
+
+        /// <summary>Removes the whole block, every layer at once (rainbow booster).</summary>
+        public void MeltWhole(BlockRef block)
+        {
+            if (IsLayered(block)) _peeled[block.route][block.index] = true;
+            _melted[block.route][block.index] = true;
+        }
 
         /// <summary>
         /// Melts everything reachable, resetting sources after each wave, until
@@ -185,27 +239,70 @@ namespace ColorMelt.Core
             var total = 0;
             while (true)
             {
-                var meltable = FindMeltable();
-                if (meltable.Count == 0)
+                // Same wave as FindMeltable, without the list: a melt only
+                // changes its own route, so routes can melt as they are found.
+                var wave = 0;
+                for (var route = 0; route < RouteCount; route++)
+                {
+                    var block = FirstIntactBlock(route);
+                    if (block < 0) continue;
+                    var reference = new BlockRef(route, block);
+                    if (!_channelColors[route].Melts(BlockColor(reference))) continue;
+                    Melt(reference);
+                    wave++;
+                }
+                if (wave == 0)
                     return total;
 
-                foreach (var block in meltable)
-                    Melt(block);
-                total += meltable.Count;
+                total += wave;
                 ResetTargets();
             }
         }
 
-        /// <summary>Compact state key: source targets plus melted blocks.</summary>
+        /// <summary>Compact state key: source targets plus the layers left on every block.</summary>
         public ulong StateKey()
         {
             ulong key = 0;
             for (var route = 0; route < _targets.Length; route++)
                 key = key * 3 + (ulong)(_targets[route] - route + 1);
-            foreach (var route in _melted)
-                foreach (var melted in route)
-                    key = key * 2 + (melted ? 1UL : 0UL);
+            for (var route = 0; route < _melted.Length; route++)
+                for (var block = 0; block < _melted[route].Length; block++)
+                {
+                    if (_inner[route][block] == ColorType.None)
+                        key = key * 2 + (_melted[route][block] ? 1UL : 0UL);
+                    else
+                        key = key * 3 + (_melted[route][block] ? 2UL : _peeled[route][block] ? 1UL : 0UL);
+                }
             return key;
+        }
+
+        /// <summary>Restores a state saved with StateKey (the solver keeps keys, not models).</summary>
+        public void LoadStateKey(ulong key)
+        {
+            // Digits come off in the reverse order StateKey wrote them.
+            for (var route = _melted.Length - 1; route >= 0; route--)
+                for (var block = _melted[route].Length - 1; block >= 0; block--)
+                {
+                    if (_inner[route][block] == ColorType.None)
+                    {
+                        _melted[route][block] = key % 2 == 1;
+                        _peeled[route][block] = false;
+                        key /= 2;
+                    }
+                    else
+                    {
+                        var layers = key % 3;
+                        _melted[route][block] = layers == 2;
+                        _peeled[route][block] = layers >= 1;
+                        key /= 3;
+                    }
+                }
+            for (var route = _targets.Length - 1; route >= 0; route--)
+            {
+                _targets[route] = route + (int)(key % 3) - 1;
+                key /= 3;
+            }
+            Recalculate();
         }
     }
 }
