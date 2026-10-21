@@ -223,6 +223,10 @@ booster.intro.Undo	New booster: UNDO!\nTakes back your last move	Новый бу
 booster.intro.Rainbow	New booster: RAINBOW!\nMelts any block you tap	Новый бустер: РАДУГА!\nРастопит любой блок	Yangi kuchaytirgich: KAMALAK!\nIstalgan blokni eritadi
 booster.intro.ExtraMoves	New booster: +{0} MOVES!\nFor when you need a little more	Новый бустер: +{0} ХОДА!\nКогда не хватает чуть-чуть	Yangi kuchaytirgich: +{0} YURISH!\nOzgina yetmay qolganda
 booster.rainbow_pick	Tap a channel: its block melts	Нажмите на канал — его блок растает	Kanalni bosing — undagi blok eriydi
+booster.tip.try	Tap it to try!	Нажмите, чтобы попробовать!	Sinab ko‘rish uchun bosing!
+booster.tip.stuck	Dead end! Tap UNDO\nto take back the last move	Тупик! Нажмите ОТМЕНУ,\nчтобы вернуть ход	Boshi berk! Yurishni qaytarish\nuchun ORTGA tugmasini bosing
+booster.tip.undo_short	Not enough moves left!\nTap UNDO to get a wasted move back	Ходов не хватит!\nНажмите ОТМЕНУ — лишний ход вернётся	Yurishlar yetmaydi!\nORTGA bosing — ortiqcha yurish qaytadi
+booster.tip.short	Not enough moves to finish.\nTap +{0} MOVES for a few more!	Ходов до победы не хватит.\nНажмите +{0} ХОДА, чтобы добавить!	G‘alabaga yurishlar yetmaydi.\nYana qo‘shish uchun +{0} YURISH bosing!
 toast.nothing_to_undo	Nothing to undo	Нечего отменять	Qaytaradigan yurish yo‘q
 
 # Combo pop-up when one pour melts several blocks. {0} is the count.

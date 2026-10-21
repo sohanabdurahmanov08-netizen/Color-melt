@@ -29,8 +29,8 @@ The mesh is rebuilt (`ToMesh` → `Refresh`), dirty-flagged, and the Editor repa
 ```bash
 unity-mcp-cli run-tool probuilder-bridge --input '{
   "gameObjectRef": "string_value",
-  "edgeA": "string_value",
-  "edgeB": "string_value",
+  "edgeA": [],
+  "edgeB": [],
   "allowNonManifold": false
 }'
 ```
@@ -57,9 +57,9 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `gameObjectRef` | `any` | Yes | Reference to the GameObject with a ProBuilderMesh component. |
-| `edgeA` | `any` | Yes | First edge as [vertexA, vertexB]. |
-| `edgeB` | `any` | Yes | Second edge as [vertexA, vertexB]. |
+| `gameObjectRef` | `string` | Yes | Reference to the GameObject with a ProBuilderMesh component. RQL: GameObjectRef |
+| `edgeA` | `array` | Yes | First edge as [vertexA, vertexB]. |
+| `edgeB` | `array` | Yes | Second edge as [vertexA, vertexB]. |
 | `allowNonManifold` | `boolean` | No | If true, allows creation of non-manifold geometry (edges shared by more than 2 faces). |
 
 ### Input JSON Schema
@@ -69,60 +69,22 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/AIGD.GameObjectRef"
-    },
-    "edgeA": {
-      "$ref": "#/$defs/System.Int32-1"
-    },
-    "edgeB": {
-      "$ref": "#/$defs/System.Int32-1"
-    },
-    "allowNonManifold": {
-      "type": "boolean"
-    }
-  },
-  "$defs": {
-    "System.Type": {
       "type": "string"
     },
-    "AIGD.GameObjectRef": {
-      "type": "object",
-      "properties": {
-        "instanceID": {
-          "type": "integer",
-          "description": "instanceID of the UnityEngine.Object. If it is '0' and 'path', 'name', 'assetPath' and 'assetGuid' is not provided, empty or null, then it will be used as 'null'. Priority: 1 (Recommended)"
-        },
-        "path": {
-          "type": "string",
-          "description": "Path of a GameObject in the hierarchy Sample 'character/hand/finger/particle'. Priority: 2."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of a GameObject in hierarchy. Priority: 3."
-        },
-        "assetType": {
-          "$ref": "#/$defs/System.Type",
-          "description": "Type of the asset."
-        },
-        "assetPath": {
-          "type": "string",
-          "description": "Path to the asset within the project. Starts with 'Assets/'"
-        },
-        "assetGuid": {
-          "type": "string",
-          "description": "Unique identifier for the asset."
-        }
-      },
-      "required": [
-        "instanceID"
-      ],
-      "description": "Find GameObject in opened Prefab or in the active Scene."
-    },
-    "System.Int32-1": {
+    "edgeA": {
       "type": "array",
       "items": {
         "type": "integer"
       }
+    },
+    "edgeB": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "allowNonManifold": {
+      "type": "boolean"
     }
   },
   "required": [
@@ -135,68 +97,5 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 ## Output
 
-### Output JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-BridgeResponse"
-    }
-  },
-  "$defs": {
-    "System.Int32-1": {
-      "type": "array",
-      "items": {
-        "type": "integer"
-      }
-    },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-BridgeResponse": {
-      "type": "object",
-      "properties": {
-        "edgeA": {
-          "$ref": "#/$defs/System.Int32-1"
-        },
-        "edgeB": {
-          "$ref": "#/$defs/System.Int32-1"
-        },
-        "newFaceIndex": {
-          "type": "integer"
-        },
-        "allowNonManifold": {
-          "type": "boolean"
-        },
-        "faceCountBefore": {
-          "type": "integer"
-        },
-        "faceCountAfter": {
-          "type": "integer"
-        },
-        "facesAdded": {
-          "type": "integer"
-        },
-        "totalVertexCount": {
-          "type": "integer"
-        },
-        "totalEdgeCount": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "newFaceIndex",
-        "allowNonManifold",
-        "faceCountBefore",
-        "faceCountAfter",
-        "facesAdded",
-        "totalVertexCount",
-        "totalEdgeCount"
-      ]
-    }
-  },
-  "required": [
-    "result"
-  ]
-}
-```
+This tool does not return structured output.
 

@@ -57,9 +57,9 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `gameObjectRef` | `any` | Yes | Reference to the GameObject with a ProBuilderMesh component. |
+| `gameObjectRef` | `string` | Yes | Reference to the GameObject with a ProBuilderMesh component. RQL: GameObjectRef |
 | `pivotLocation` | `string` | No | Where to place the pivot. |
-| `customPosition` | `any` | No | Custom world position for pivot (only used when pivotLocation=Custom). |
+| `customPosition` | `string` | No | Custom world position for pivot (only used when pivotLocation=Custom). RQL: Vector3 |
 
 ### Input JSON Schema
 
@@ -68,7 +68,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/AIGD.GameObjectRef"
+      "type": "string"
     },
     "pivotLocation": {
       "type": "string",
@@ -79,65 +79,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       ]
     },
     "customPosition": {
-      "$ref": "#/$defs/UnityEngine.Vector3"
-    }
-  },
-  "$defs": {
-    "System.Type": {
       "type": "string"
-    },
-    "AIGD.GameObjectRef": {
-      "type": "object",
-      "properties": {
-        "instanceID": {
-          "type": "integer",
-          "description": "instanceID of the UnityEngine.Object. If it is '0' and 'path', 'name', 'assetPath' and 'assetGuid' is not provided, empty or null, then it will be used as 'null'. Priority: 1 (Recommended)"
-        },
-        "path": {
-          "type": "string",
-          "description": "Path of a GameObject in the hierarchy Sample 'character/hand/finger/particle'. Priority: 2."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of a GameObject in hierarchy. Priority: 3."
-        },
-        "assetType": {
-          "$ref": "#/$defs/System.Type",
-          "description": "Type of the asset."
-        },
-        "assetPath": {
-          "type": "string",
-          "description": "Path to the asset within the project. Starts with 'Assets/'"
-        },
-        "assetGuid": {
-          "type": "string",
-          "description": "Unique identifier for the asset."
-        }
-      },
-      "required": [
-        "instanceID"
-      ],
-      "description": "Find GameObject in opened Prefab or in the active Scene."
-    },
-    "UnityEngine.Vector3": {
-      "type": "object",
-      "properties": {
-        "x": {
-          "type": "number"
-        },
-        "y": {
-          "type": "number"
-        },
-        "z": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "x",
-        "y",
-        "z"
-      ],
-      "additionalProperties": false
     }
   },
   "required": [
@@ -148,44 +90,5 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 ## Output
 
-### Output JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-SetPivotResponse"
-    }
-  },
-  "$defs": {
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-SetPivotResponse": {
-      "type": "object",
-      "properties": {
-        "pivotLocation": {
-          "type": "string"
-        },
-        "oldPivot": {
-          "type": "string"
-        },
-        "newPivot": {
-          "type": "string"
-        },
-        "offsetApplied": {
-          "type": "string"
-        },
-        "gameObjectName": {
-          "type": "string"
-        },
-        "newPosition": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "required": [
-    "result"
-  ]
-}
-```
+This tool does not return structured output.
 

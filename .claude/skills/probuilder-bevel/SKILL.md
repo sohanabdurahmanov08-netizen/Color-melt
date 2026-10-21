@@ -24,7 +24,7 @@ Vertex indices are validated against `vertexCount`. After `BevelEdges` runs, the
 ```bash
 unity-mcp-cli run-tool probuilder-bevel --input '{
   "gameObjectRef": "string_value",
-  "edges": "string_value",
+  "edges": [],
   "amount": 0
 }'
 ```
@@ -51,8 +51,8 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `gameObjectRef` | `any` | Yes | Reference to the GameObject with a ProBuilderMesh component. |
-| `edges` | `any` | Yes | Array of edge definitions. Each edge is defined by two vertex indices [vertexA, vertexB]. Example: [[0,1], [2,3]] bevels edges from vertex 0 to 1 and from vertex 2 to 3. |
+| `gameObjectRef` | `string` | Yes | Reference to the GameObject with a ProBuilderMesh component. RQL: GameObjectRef |
+| `edges` | `array` | Yes | Array of edge definitions. Each edge is defined by two vertex indices [vertexA, vertexB]. Example: [[0,1], [2,3]] bevels edges from vertex 0 to 1 and from vertex 2 to 3. |
 | `amount` | `number` | No | Bevel amount from 0 (no bevel) to 1 (maximum bevel reaching face center). Recommended values: 0.05 to 0.2. |
 
 ### Input JSON Schema
@@ -62,63 +62,19 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/AIGD.GameObjectRef"
+      "type": "string"
     },
     "edges": {
-      "$ref": "#/$defs/System.Int32-1-1"
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      }
     },
     "amount": {
       "type": "number"
-    }
-  },
-  "$defs": {
-    "System.Type": {
-      "type": "string"
-    },
-    "AIGD.GameObjectRef": {
-      "type": "object",
-      "properties": {
-        "instanceID": {
-          "type": "integer",
-          "description": "instanceID of the UnityEngine.Object. If it is '0' and 'path', 'name', 'assetPath' and 'assetGuid' is not provided, empty or null, then it will be used as 'null'. Priority: 1 (Recommended)"
-        },
-        "path": {
-          "type": "string",
-          "description": "Path of a GameObject in the hierarchy Sample 'character/hand/finger/particle'. Priority: 2."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of a GameObject in hierarchy. Priority: 3."
-        },
-        "assetType": {
-          "$ref": "#/$defs/System.Type",
-          "description": "Type of the asset."
-        },
-        "assetPath": {
-          "type": "string",
-          "description": "Path to the asset within the project. Starts with 'Assets/'"
-        },
-        "assetGuid": {
-          "type": "string",
-          "description": "Unique identifier for the asset."
-        }
-      },
-      "required": [
-        "instanceID"
-      ],
-      "description": "Find GameObject in opened Prefab or in the active Scene."
-    },
-    "System.Int32-1": {
-      "type": "array",
-      "items": {
-        "type": "integer"
-      }
-    },
-    "System.Int32-1-1": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/System.Int32-1"
-      }
     }
   },
   "required": [
@@ -130,52 +86,5 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 ## Output
 
-### Output JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-BevelResponse"
-    }
-  },
-  "$defs": {
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-BevelResponse": {
-      "type": "object",
-      "properties": {
-        "edgesBeveled": {
-          "type": "integer"
-        },
-        "bevelAmount": {
-          "type": "number"
-        },
-        "newFacesCreated": {
-          "type": "integer"
-        },
-        "totalFaceCount": {
-          "type": "integer"
-        },
-        "totalVertexCount": {
-          "type": "integer"
-        },
-        "totalEdgeCount": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "edgesBeveled",
-        "bevelAmount",
-        "newFacesCreated",
-        "totalFaceCount",
-        "totalVertexCount",
-        "totalEdgeCount"
-      ]
-    }
-  },
-  "required": [
-    "result"
-  ]
-}
-```
+This tool does not return structured output.
 

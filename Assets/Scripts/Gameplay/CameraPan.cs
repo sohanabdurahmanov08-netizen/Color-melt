@@ -59,11 +59,28 @@ namespace ColorMelt.Gameplay
             if (!visible) _dragging = false;
         }
 
-        /// <summary>Screen height share the board must leave free for the pad.</summary>
-        public float ReservedBottom => isActiveAndEnabled ? zone.yMax + boardGap : 0f;
+        /// <summary>The pad zone, lifted above the home indicator / gesture bar on phones that have one.</summary>
+        private Rect Zone
+        {
+            get
+            {
+                var lift = UI.SafeAreaInset.BottomShare;
+                return new Rect(zone.x, zone.y + lift, zone.width, zone.height);
+            }
+        }
 
-        public Rect ScreenRect => new Rect(zone.x * Screen.width, zone.y * Screen.height,
-            zone.width * Screen.width, zone.height * Screen.height);
+        /// <summary>Screen height share the board must leave free for the pad.</summary>
+        public float ReservedBottom => isActiveAndEnabled ? Zone.yMax + boardGap : 0f;
+
+        public Rect ScreenRect
+        {
+            get
+            {
+                var area = Zone;
+                return new Rect(area.x * Screen.width, area.y * Screen.height,
+                    area.width * Screen.width, area.height * Screen.height);
+            }
+        }
 
         public bool Contains(Vector2 screenPosition) => isActiveAndEnabled && ScreenRect.Contains(screenPosition);
 
@@ -199,6 +216,13 @@ namespace ColorMelt.Gameplay
         {
             if (_pad == null) return;
 
+            var area = Zone;
+            if (_pad.anchorMin != area.min || _pad.anchorMax != area.max)
+            {
+                _pad.anchorMin = area.min;
+                _pad.anchorMax = area.max;
+            }
+
             _padAlpha = Mathf.MoveTowards(_padAlpha, _padVisible ? 1f : 0f, Time.unscaledDeltaTime * 4f);
             if (_padGroup == null) _padGroup = _pad.gameObject.AddComponent<CanvasGroup>();
             if (_padGroup.alpha != _padAlpha) _padGroup.alpha = _padAlpha;
@@ -224,8 +248,8 @@ namespace ColorMelt.Gameplay
 
             _pad = new GameObject("Pad", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
             _pad.SetParent(canvasObject.transform, false);
-            _pad.anchorMin = zone.min;
-            _pad.anchorMax = zone.max;
+            _pad.anchorMin = Zone.min;
+            _pad.anchorMax = Zone.max;
             _pad.offsetMin = _pad.offsetMax = Vector2.zero;
 
             _padImage = _pad.GetComponent<Image>();

@@ -31,7 +31,7 @@ The mesh is rebuilt (`ToMesh` → `Refresh`), dirty-flagged, and the Editor repa
 unity-mcp-cli run-tool probuilder-set-face-material --input '{
   "gameObjectRef": "string_value",
   "materialPath": "string_value",
-  "faceIndices": "string_value",
+  "faceIndices": [],
   "faceDirection": "string_value"
 }'
 ```
@@ -58,10 +58,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `gameObjectRef` | `any` | Yes | Reference to the GameObject with a ProBuilderMesh component. |
+| `gameObjectRef` | `string` | Yes | Reference to the GameObject with a ProBuilderMesh component. RQL: GameObjectRef |
 | `materialPath` | `string` | Yes | Path to the material asset (e.g., 'Assets/Materials/MyMaterial.mat') or material name. |
-| `faceIndices` | `any` | No | Array of face indices to apply the material to. Use this OR faceDirection, not both. Use ProBuilder_GetMeshInfo to get valid face indices. |
-| `faceDirection` | `any` | No | Semantic face selection by direction. Use this OR faceIndices, not both. |
+| `faceIndices` | `array` | No | Array of face indices to apply the material to. Use this OR faceDirection, not both. Use ProBuilder_GetMeshInfo to get valid face indices. |
+| `faceDirection` | `string` | No | Semantic face selection by direction. Use this OR faceIndices, not both. |
 
 ### Input JSON Schema
 
@@ -70,62 +70,18 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/AIGD.GameObjectRef"
+      "type": "string"
     },
     "materialPath": {
       "type": "string"
     },
     "faceIndices": {
-      "$ref": "#/$defs/System.Int32-1"
-    },
-    "faceDirection": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection"
-    }
-  },
-  "$defs": {
-    "System.Type": {
-      "type": "string"
-    },
-    "AIGD.GameObjectRef": {
-      "type": "object",
-      "properties": {
-        "instanceID": {
-          "type": "integer",
-          "description": "instanceID of the UnityEngine.Object. If it is '0' and 'path', 'name', 'assetPath' and 'assetGuid' is not provided, empty or null, then it will be used as 'null'. Priority: 1 (Recommended)"
-        },
-        "path": {
-          "type": "string",
-          "description": "Path of a GameObject in the hierarchy Sample 'character/hand/finger/particle'. Priority: 2."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of a GameObject in hierarchy. Priority: 3."
-        },
-        "assetType": {
-          "$ref": "#/$defs/System.Type",
-          "description": "Type of the asset."
-        },
-        "assetPath": {
-          "type": "string",
-          "description": "Path to the asset within the project. Starts with 'Assets/'"
-        },
-        "assetGuid": {
-          "type": "string",
-          "description": "Unique identifier for the asset."
-        }
-      },
-      "required": [
-        "instanceID"
-      ],
-      "description": "Find GameObject in opened Prefab or in the active Scene."
-    },
-    "System.Int32-1": {
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection": {
+    "faceDirection": {
       "type": "string",
       "enum": [
         "Up",
@@ -146,70 +102,5 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 ## Output
 
-### Output JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-SetFaceMaterialResponse"
-    }
-  },
-  "$defs": {
-    "System.Int32-1": {
-      "type": "array",
-      "items": {
-        "type": "integer"
-      }
-    },
-    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-MaterialInfo)": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-MaterialInfo"
-      }
-    },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-MaterialInfo": {
-      "type": "object",
-      "properties": {
-        "index": {
-          "type": "integer"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "index"
-      ]
-    },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-SetFaceMaterialResponse": {
-      "type": "object",
-      "properties": {
-        "materialName": {
-          "type": "string"
-        },
-        "materialIndex": {
-          "type": "integer"
-        },
-        "selectionMethod": {
-          "type": "string"
-        },
-        "facesUpdated": {
-          "$ref": "#/$defs/System.Int32-1"
-        },
-        "meshMaterials": {
-          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-MaterialInfo)"
-        }
-      },
-      "required": [
-        "materialIndex"
-      ]
-    }
-  },
-  "required": [
-    "result"
-  ]
-}
-```
+This tool does not return structured output.
 

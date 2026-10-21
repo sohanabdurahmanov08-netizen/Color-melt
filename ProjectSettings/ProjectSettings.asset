@@ -41,8 +41,8 @@ PlayerSettings:
     height: 1
   m_SplashScreenLogos: []
   m_VirtualRealitySplashScreen: {fileID: 0}
-  defaultScreenWidth: 1024
-  defaultScreenHeight: 768
+  defaultScreenWidth: 450
+  defaultScreenHeight: 974
   defaultScreenWidthWeb: 960
   defaultScreenHeightWeb: 600
   m_StereoRenderingPath: 0
@@ -80,7 +80,7 @@ PlayerSettings:
   androidAutoRotationBehavior: 1
   androidPredictiveBackSupport: 1
   androidApplicationEntry: 2
-  defaultIsNativeResolution: 1
+  defaultIsNativeResolution: 0
   macRetinaSupport: 1
   runInBackground: 0
   muteOtherAudioSources: 0
@@ -107,7 +107,7 @@ PlayerSettings:
   xboxEnableFitness: 0
   visibleInBackground: 1
   allowFullscreenSwitch: 1
-  fullscreenMode: 1
+  fullscreenMode: 3
   xboxSpeechDB: 0
   xboxEnableHeadOrientation: 0
   xboxEnableGuest: 0
@@ -176,7 +176,7 @@ PlayerSettings:
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 25
-  AndroidTargetSdkVersion: 28
+  AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   AndroidPreferredDataLocation: 1
   aotOptions: 
@@ -534,6 +534,9 @@ PlayerSettings:
   - m_BuildTarget: Android
     m_StaticBatching: 1
     m_DynamicBatching: 0
+  - m_BuildTarget: Standalone
+    m_StaticBatching: 1
+    m_DynamicBatching: 0
   m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs: []
   m_BuildTargetGraphicsJobMode: []
@@ -835,25 +838,25 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    EmbeddedLinux: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    GameCoreScarlett: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    GameCoreXboxOne: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    Kepler: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    LinuxHeadlessSimulation: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    Nintendo Switch: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    Nintendo Switch 2: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    PS4: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    PS5: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    QNX: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    Server: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    Standalone: LEVELPLAY_DEPENDENCIES_INSTALLED;UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    VisionOS: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    WebGL: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    Windows Store Apps: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    XboxOne: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    iPhone: UNITY_MCP_READY;UNITY_MCP_DEPS_8
-    tvOS: UNITY_MCP_READY;UNITY_MCP_DEPS_8
+    Android: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    EmbeddedLinux: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    GameCoreScarlett: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    GameCoreXboxOne: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    Kepler: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    LinuxHeadlessSimulation: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    Nintendo Switch: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    Nintendo Switch 2: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    PS4: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    PS5: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    QNX: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    Server: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    Standalone: LEVELPLAY_DEPENDENCIES_INSTALLED;UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    VisionOS: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    WebGL: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    Windows Store Apps: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    XboxOne: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    iPhone: UNITY_MCP_READY;UNITY_MCP_DEPS_13
+    tvOS: UNITY_MCP_READY;UNITY_MCP_DEPS_13
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

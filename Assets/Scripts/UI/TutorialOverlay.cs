@@ -5,7 +5,8 @@ namespace ColorMelt.UI
 {
     /// <summary>
     /// Tutorial visuals: a message banner and a pulsing tap marker that follows
-    /// a point in the 3D scene. Driven by TutorialController.
+    /// a point in the 3D scene or a HUD button. Driven by TutorialController
+    /// and, for the booster tips, by BoosterBar.
     /// </summary>
     public class TutorialOverlay : MonoBehaviour
     {
@@ -19,10 +20,14 @@ namespace ColorMelt.UI
         private RectTransform _area;
         private Camera _camera;
         private Vector3 _worldPoint;
+        private RectTransform _uiTarget;
         private bool _pointing;
         private bool _swiping;
         private Rect _swipeRect;
         private float _bannerPop;
+
+        /// <summary>True while a banner is up (the overlay hides itself when done).</summary>
+        public bool IsShowing => gameObject.activeSelf;
 
         private void Awake()
         {
@@ -43,9 +48,19 @@ namespace ColorMelt.UI
         {
             _worldPoint = worldPoint;
             _camera = cam;
+            _uiTarget = null;
             _pointing = true;
             _swiping = false;
             if (pointer != null) pointer.gameObject.SetActive(true);
+        }
+
+        /// <summary>Pulses the pointer over a HUD element, e.g. a booster button.</summary>
+        public void PointAtUI(RectTransform target)
+        {
+            _uiTarget = target;
+            _pointing = target != null;
+            _swiping = false;
+            if (pointer != null) pointer.gameObject.SetActive(_pointing);
         }
 
         /// <summary>Slides the pointer back and forth across a screen rect, as a swipe gesture.</summary>
@@ -61,6 +76,7 @@ namespace ColorMelt.UI
         {
             _pointing = false;
             _swiping = false;
+            _uiTarget = null;
             if (pointer != null) pointer.gameObject.SetActive(false);
         }
 
@@ -100,9 +116,20 @@ namespace ColorMelt.UI
                 return;
             }
 
-            if (!_pointing || pointer == null || _camera == null) return;
+            if (!_pointing || pointer == null) return;
 
-            var screen = _camera.WorldToScreenPoint(_worldPoint);
+            Vector3 screen;
+            if (_uiTarget != null)
+            {
+                var canvas = _uiTarget.GetComponentInParent<Canvas>();
+                var uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                    ? canvas.worldCamera : null;
+                screen = RectTransformUtility.WorldToScreenPoint(uiCamera, _uiTarget.TransformPoint(_uiTarget.rect.center));
+            }
+            else if (_camera != null)
+                screen = _camera.WorldToScreenPoint(_worldPoint);
+            else
+                return;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_area, screen, null, out var local))
                 pointer.anchoredPosition = local;
 

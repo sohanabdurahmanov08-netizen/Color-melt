@@ -48,6 +48,52 @@ namespace ColorMelt.Editor
         }
 
         /// <summary>
+        /// Builds a Windows test build into Builds/Windows/ColorMelt-{version}
+        /// and zips it next to the folder, ready to send to testers. The game
+        /// is portrait, so it opens in a fixed portrait window instead of
+        /// full screen on a landscape monitor. From the command line:
+        /// Unity -batchmode -quit -projectPath . -executeMethod ColorMelt.Editor.BuildScript.BuildWindows
+        /// </summary>
+        [MenuItem("Tools/Color Melt/Build Windows", priority = 21)]
+        public static void BuildWindows()
+        {
+            PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+            PlayerSettings.defaultIsNativeResolution = false;
+            PlayerSettings.defaultScreenWidth = 450;
+            PlayerSettings.defaultScreenHeight = 974;
+            PlayerSettings.resizableWindow = false;
+
+            var folder = $"Builds/Windows/ColorMelt-{PlayerSettings.bundleVersion}";
+            if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            Directory.CreateDirectory(folder);
+            var options = new BuildPlayerOptions
+            {
+                scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray(),
+                locationPathName = $"{folder}/ColorMelt.exe",
+                target = BuildTarget.StandaloneWindows64,
+                targetGroup = BuildTargetGroup.Standalone,
+                options = BuildOptions.None
+            };
+
+            var summary = BuildPipeline.BuildPlayer(options).summary;
+            var succeeded = summary.result == BuildResult.Succeeded;
+            if (succeeded)
+            {
+                // Debug symbols are only useful to us, not to testers.
+                foreach (var symbols in Directory.GetDirectories(folder, "*_BurstDebugInformation_DoNotShip"))
+                    Directory.Delete(symbols, true);
+
+                var zip = folder + ".zip";
+                if (File.Exists(zip)) File.Delete(zip);
+                System.IO.Compression.ZipFile.CreateFromDirectory(folder, zip,
+                    System.IO.Compression.CompressionLevel.Optimal, true);
+            }
+            Finish(succeeded,
+                $"{summary.result}, {summary.totalSize / (1024f * 1024f):F1} MB, {summary.totalErrors} error(s), " +
+                $"{summary.totalTime.TotalMinutes:F1} min -> {folder}.zip");
+        }
+
+        /// <summary>
         /// Writes the LevelPlay (ads) Android libraries into mainTemplate.gradle
         /// through the Mobile Dependency Resolver, found by reflection so the
         /// build still works without it.
@@ -84,10 +130,13 @@ namespace ColorMelt.Editor
             Directory.CreateDirectory(folder);
 
             const string variable = "JAVA_TOOL_OPTIONS";
-            var option = "-Djdk.net.unixdomain.tmpdir=" + folder;
+            var option = $"-Djdk.net.unixdomain.tmpdir={folder} -Djava.io.tmpdir={folder}";
             var current = System.Environment.GetEnvironmentVariable(variable) ?? "";
             if (!current.Contains("jdk.net.unixdomain.tmpdir"))
                 System.Environment.SetEnvironmentVariable(variable, (current + " " + option).Trim());
+            // The option alone was not always enough: Java also falls back to TEMP.
+            System.Environment.SetEnvironmentVariable("TEMP", folder);
+            System.Environment.SetEnvironmentVariable("TMP", folder);
         }
 
         private static void Finish(bool succeeded, string message)

@@ -29,7 +29,7 @@ The mesh is rebuilt (`ToMesh` → `Refresh`), the `ProBuilderMesh` and GameObjec
 ```bash
 unity-mcp-cli run-tool probuilder-delete-faces --input '{
   "gameObjectRef": "string_value",
-  "faceIndices": "string_value",
+  "faceIndices": [],
   "faceDirection": "string_value"
 }'
 ```
@@ -56,9 +56,9 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `gameObjectRef` | `any` | Yes | Reference to the GameObject with a ProBuilderMesh component. |
-| `faceIndices` | `any` | No | Array of face indices to delete. Use this OR faceDirection, not both. Use ProBuilder_GetMeshInfo to get valid face indices. |
-| `faceDirection` | `any` | No | Semantic face selection by direction. Use this OR faceIndices, not both. |
+| `gameObjectRef` | `string` | Yes | Reference to the GameObject with a ProBuilderMesh component. RQL: GameObjectRef |
+| `faceIndices` | `array` | No | Array of face indices to delete. Use this OR faceDirection, not both. Use ProBuilder_GetMeshInfo to get valid face indices. |
+| `faceDirection` | `string` | No | Semantic face selection by direction. Use this OR faceIndices, not both. |
 
 ### Input JSON Schema
 
@@ -67,59 +67,15 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/AIGD.GameObjectRef"
-    },
-    "faceIndices": {
-      "$ref": "#/$defs/System.Int32-1"
-    },
-    "faceDirection": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection"
-    }
-  },
-  "$defs": {
-    "System.Type": {
       "type": "string"
     },
-    "AIGD.GameObjectRef": {
-      "type": "object",
-      "properties": {
-        "instanceID": {
-          "type": "integer",
-          "description": "instanceID of the UnityEngine.Object. If it is '0' and 'path', 'name', 'assetPath' and 'assetGuid' is not provided, empty or null, then it will be used as 'null'. Priority: 1 (Recommended)"
-        },
-        "path": {
-          "type": "string",
-          "description": "Path of a GameObject in the hierarchy Sample 'character/hand/finger/particle'. Priority: 2."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of a GameObject in hierarchy. Priority: 3."
-        },
-        "assetType": {
-          "$ref": "#/$defs/System.Type",
-          "description": "Type of the asset."
-        },
-        "assetPath": {
-          "type": "string",
-          "description": "Path to the asset within the project. Starts with 'Assets/'"
-        },
-        "assetGuid": {
-          "type": "string",
-          "description": "Unique identifier for the asset."
-        }
-      },
-      "required": [
-        "instanceID"
-      ],
-      "description": "Find GameObject in opened Prefab or in the active Scene."
-    },
-    "System.Int32-1": {
+    "faceIndices": {
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection": {
+    "faceDirection": {
       "type": "string",
       "enum": [
         "Up",
@@ -139,64 +95,5 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 ## Output
 
-### Output JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-DeleteFacesResponse"
-    }
-  },
-  "$defs": {
-    "System.Int32-1": {
-      "type": "array",
-      "items": {
-        "type": "integer"
-      }
-    },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-DeleteFacesResponse": {
-      "type": "object",
-      "properties": {
-        "deletedFaceCount": {
-          "type": "integer"
-        },
-        "selectionMethod": {
-          "type": "string"
-        },
-        "deletedFaceIndices": {
-          "$ref": "#/$defs/System.Int32-1"
-        },
-        "facesRemoved": {
-          "type": "integer"
-        },
-        "verticesRemoved": {
-          "type": "integer"
-        },
-        "totalFaceCount": {
-          "type": "integer"
-        },
-        "totalVertexCount": {
-          "type": "integer"
-        },
-        "totalEdgeCount": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "deletedFaceCount",
-        "facesRemoved",
-        "verticesRemoved",
-        "totalFaceCount",
-        "totalVertexCount",
-        "totalEdgeCount"
-      ]
-    }
-  },
-  "required": [
-    "result"
-  ]
-}
-```
+This tool does not return structured output.
 

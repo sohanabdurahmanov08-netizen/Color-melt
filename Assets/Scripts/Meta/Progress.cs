@@ -19,6 +19,7 @@ namespace ColorMelt.Meta
         private const string InitializedKey = "cm.initialized";
         private const string BoosterKeyPrefix = "cm.booster.";
         private const string BoosterSeenKeyPrefix = "cm.booster_seen.";
+        private const string TipSeenKeyPrefix = "cm.tip_seen.";
 
         public static event Action<int> CoinsChanged;
         public static event Action<int> HintsChanged;
@@ -81,6 +82,18 @@ namespace ColorMelt.Meta
             PrefsSaver.Request();
             return true;
         }
+
+        /// <summary>True the first time a one-off tip (e.g. "stuck? undo") is asked for, so it shows once.</summary>
+        public static bool MarkTipSeen(string tip)
+        {
+            var key = TipSeenKeyPrefix + tip;
+            if (PlayerPrefs.GetInt(key, 0) == 1) return false;
+            PlayerPrefs.SetInt(key, 1);
+            PrefsSaver.Request();
+            return true;
+        }
+
+        public static bool IsTipSeen(string tip) => PlayerPrefs.GetInt(TipSeenKeyPrefix + tip, 0) == 1;
 
         /// <summary>Highest level index the player may start (0-based).</summary>
         public static int UnlockedLevel => PlayerPrefs.GetInt(UnlockedKey, 0);

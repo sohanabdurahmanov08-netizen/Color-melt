@@ -61,11 +61,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 |------|------|----------|-------------|
 | `shapeType` | `string` | Yes | The type of shape to create. |
 | `name` | `string` | No | Name of the new GameObject. |
-| `parentGameObjectRef` | `any` | No | Parent GameObject reference. If not provided, the shape will be created at the root of the scene. |
-| `position` | `any` | No | Position of the shape in world or local space. |
-| `rotation` | `any` | No | Rotation of the shape in euler angles (degrees). |
-| `scale` | `any` | No | Scale of the shape. |
-| `size` | `any` | No | Size of the shape (width, height, depth). Default is (1, 1, 1). |
+| `parentGameObjectRef` | `string` | No | Parent GameObject reference. If not provided, the shape will be created at the root of the scene. RQL: GameObjectRef |
+| `position` | `string` | No | Position of the shape in world or local space. RQL: Vector3 |
+| `rotation` | `string` | No | Rotation of the shape in euler angles (degrees). RQL: Vector3 |
+| `scale` | `string` | No | Scale of the shape. RQL: Vector3 |
+| `size` | `string` | No | Size of the shape (width, height, depth). Default is (1, 1, 1). RQL: Vector3 |
 | `isLocalSpace` | `boolean` | No | If true, position/rotation/scale are in local space relative to parent. |
 
 ### Input JSON Schema
@@ -96,80 +96,22 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "type": "string"
     },
     "parentGameObjectRef": {
-      "$ref": "#/$defs/AIGD.GameObjectRef"
+      "type": "string"
     },
     "position": {
-      "$ref": "#/$defs/UnityEngine.Vector3"
+      "type": "string"
     },
     "rotation": {
-      "$ref": "#/$defs/UnityEngine.Vector3"
+      "type": "string"
     },
     "scale": {
-      "$ref": "#/$defs/UnityEngine.Vector3"
+      "type": "string"
     },
     "size": {
-      "$ref": "#/$defs/UnityEngine.Vector3"
+      "type": "string"
     },
     "isLocalSpace": {
       "type": "boolean"
-    }
-  },
-  "$defs": {
-    "System.Type": {
-      "type": "string"
-    },
-    "AIGD.GameObjectRef": {
-      "type": "object",
-      "properties": {
-        "instanceID": {
-          "type": "integer",
-          "description": "instanceID of the UnityEngine.Object. If it is '0' and 'path', 'name', 'assetPath' and 'assetGuid' is not provided, empty or null, then it will be used as 'null'. Priority: 1 (Recommended)"
-        },
-        "path": {
-          "type": "string",
-          "description": "Path of a GameObject in the hierarchy Sample 'character/hand/finger/particle'. Priority: 2."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of a GameObject in hierarchy. Priority: 3."
-        },
-        "assetType": {
-          "$ref": "#/$defs/System.Type",
-          "description": "Type of the asset."
-        },
-        "assetPath": {
-          "type": "string",
-          "description": "Path to the asset within the project. Starts with 'Assets/'"
-        },
-        "assetGuid": {
-          "type": "string",
-          "description": "Unique identifier for the asset."
-        }
-      },
-      "required": [
-        "instanceID"
-      ],
-      "description": "Find GameObject in opened Prefab or in the active Scene."
-    },
-    "UnityEngine.Vector3": {
-      "type": "object",
-      "properties": {
-        "x": {
-          "type": "number"
-        },
-        "y": {
-          "type": "number"
-        },
-        "z": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "x",
-        "y",
-        "z"
-      ],
-      "additionalProperties": false
     }
   },
   "required": [
@@ -180,59 +122,5 @@ Read the /unity-initial-setup skill for detailed installation instructions.
 
 ## Output
 
-### Output JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-CreateShapeResponse"
-    }
-  },
-  "$defs": {
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder-CreateShapeResponse": {
-      "type": "object",
-      "properties": {
-        "gameObjectName": {
-          "type": "string"
-        },
-        "instanceId": {
-          "type": "integer"
-        },
-        "shapeType": {
-          "type": "string"
-        },
-        "position": {
-          "type": "string"
-        },
-        "rotation": {
-          "type": "string"
-        },
-        "scale": {
-          "type": "string"
-        },
-        "faceCount": {
-          "type": "integer"
-        },
-        "vertexCount": {
-          "type": "integer"
-        },
-        "edgeCount": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "instanceId",
-        "faceCount",
-        "vertexCount",
-        "edgeCount"
-      ]
-    }
-  },
-  "required": [
-    "result"
-  ]
-}
-```
+This tool does not return structured output.
 

@@ -509,7 +509,9 @@ namespace ColorMelt.Gameplay
             var right = 1f - framePaddingSides * 2f;
             var bottomPadding = Mathf.Max(framePaddingBottom, Pan != null ? Pan.ReservedBottom : 0f);
             var bottom = bottomPadding * 2f - 1f;
-            var top = 1f - framePaddingTop * 2f;
+            // The HUD moves down below a notch, so the board leaves that room too.
+            var topInset = Screen.height > 0 ? (Screen.height - Screen.safeArea.yMax) / Screen.height : 0f;
+            var top = 1f - (framePaddingTop + topInset) * 2f;
 
             // A point p is on screen inside [lo, hi] when
             // lo * tan * (p.z - cam.z) <= p.axis - cam.axis <= hi * tan * (p.z - cam.z).
